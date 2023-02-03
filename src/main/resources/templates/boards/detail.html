@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Board Detail</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+
+<script th:inline="javascript">
+  $(document).ready(function () {
+
+    let boardNum = $("#boardNum").text();
+    let boardUser = $("#boardUser").text();
+    let boardContent = $("#content").val();
+    let sessionId = $("#sessionId").val();
+
+    //작성자인 경우에만 수정 가능
+    if(sessionId != boardUser) {
+      $("#modify").hide();
+    }
+
+    $.ajax({
+                type : "GET",
+                url : "/board/selectAnswerList",
+                dataType:"JSON",
+                data : {
+                        'boardNum' : boardNum
+                },
+                success : function(data){
+                      console.log(data);
+
+                      $("#answerDiv").empty();
+
+                      var a = '';
+                      var boardAnswerList = data.boardAnswerList;
+
+                      $.each(boardAnswerList, function(key, value) {
+                         a += "<span>[답변]</span><br>";
+                         a += "<span>작성자 : "+value.user_id+"</span>&nbsp";
+                         a += "<span>작성날짜 : "+value.insert_date.split('T')[0] + ' ' + value.insert_date.split('T')[1]+"</span><br>";
+                         a += "<textarea style='width: 397px; height: 120px; background-color:lightgray; resize: none;' readonly>"+value.board_content+"</textarea>";
+                         a += "<br>";
+                      });
+                     $("#answerDiv").html(a);
+                }
+        });
+
+    $("#modify").on("click", function() {
+
+      let status = $("#modify").text();
+      let changedContent = $("#content").val();
+
+      if(status == "수정") {
+        $("#cancel").show();
+        $("#content").attr("readonly", false);
+        $("#content").focus();
+        $("#modify").text("완료");
+        $("#answerInsert").hide();
+      }
+      else if(status == "완료") {
+        $("#cancel").hide();
+        $("#content").attr("readonly", true);
+        $("#modify").text("수정");
+        $("#answerInsert").show();
+
+        $.ajax({
+                type : "PUT",
+                url : "/board/update",
+                dataType:"text",
+                data : {
+                        'boardNum' : boardNum,
+                        'boardContent' : changedContent
+                },
+                success : function(data){
+                      console.log(data);
+
+                      if(data == "1") {
+                        alert('수정하였습니다.');
+                        boardContent = changedContent;
+                      }
+                }
+        });
+      }
+
+    });
+
+    $("#cancel").on("click", function() {
+      $("#cancel").hide();
+      $("#modify").show();
+      $("#answerInsert").show();
+      $("#content").attr("readonly", true);
+      $("#content").val(boardContent);
+      $("#answerContent").hide();
+      $("#answerContent").val("");
+      $("#modify").text("수정");
+      $("#answerInsert").text("답변하기");
+    });
+
+    $("#answerInsert").on("click", function() {
+
+      let status = $("#answerInsert").text();
+
+      if(status == "답변하기") {
+        $("#cancel").show();
+        $("#modify").hide();
+
+        $("#answerContent").show();
+        $("#answerContent").focus();
+        $("#answerInsert").text("완료");
+      }
+      else if(status == "완료") {
+        $("#cancel").hide();
+        $("#modify").show();
+        $("#answerContent").hide();
+
+        $.ajax({
+                type : "POST",
+                url : "/board/insert",
+                dataType:"text",
+                data : {
+                        'user_id' : sessionId,
+                        'board_content' : $("#answerContent").val(),
+                        'target' : boardNum
+                },
+                success : function(data){
+                      console.log(data);
+
+                      if(data == "1") {
+                        //alert('답변을 작성하였습니다.');
+                        location.reload();
+                      }
+                }
+        });
+      }
+    });
+
+  })
+</script>
+
+<body>
+<table style="text-align:center;">
+  <thead>
+  <tr>
+    <th>번호</th>
+    <th>제목</th>
+    <th>날짜</th>
+    <th>작성자</th>
+  </tr>
+  </thead>
+  <tbody id="dataTableBody">
+    <tr>
+      <td id="boardNum" th:text="${boardForm.board_no}">번호 부분</td>
+      <td th:text="${boardForm.board_title}">제목 부분</td>
+      <td th:text="${#strings.arraySplit(boardForm.insert_date, 'T')[0] + ' ' + #strings.arraySplit(boardForm.insert_date, 'T')[1]}">날짜 부분</td>
+      <td id="boardUser" th:text="${boardForm.user_id}">작성자 부분</td>
+    </tr>
+    <tr><td colspan="4"><textarea id="content" style="width: 397px; height: 240px; resize: none;" th:text="${boardForm.board_content}" readonly>내용 부분</textarea></td></tr>
+  </tbody>
+</table>
+
+<input type="hidden" id="sessionId" th:value="${session.loginMember.user_id}" />
+
+<button id="modify">수정</button>
+<button style="display: none;" id="cancel">취소</button>
+<button id="answerInsert">답변하기</button>
+
+<div id="answerDiv">
+</div>
+<textarea id="answerContent" style="width: 397px; height: 120px; display: none; resize: none;"></textarea>
+
+</body>
+</html>

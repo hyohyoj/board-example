@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Board List</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<style>
+    ul {
+    text-align: center;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-right: 0;
+	padding-left :0;
+}
+ul li {
+    text-align: center;
+    float: left;
+	list-style:none;
+
+}
+
+ul li a {
+    display: block;
+    font-size: 14px;
+	color: black;
+    padding: 9px 12px;
+    border-right: solid 1px #ccc;
+    box-sizing: border-box;
+	text-decoration-line:none;
+}
+
+ul li.on {
+    background: #eda712;
+}
+
+ul li.on a {
+    color: #fff;
+}
+</style>
+
+<script th:inline="javascript">
+    $(document).ready(function () {
+
+        let globalCurrentPage = $("#selectedPage").val();
+        let keyword = $("#searchKeyword").val();
+        let searchContent = $("#searchInput").val();
+        let sessionId = $("#sessionId").val();
+        let params;
+
+        function selectList(selectedPage) {
+
+            if(typeof selectedPage == 'undefined' || selectedPage == '' ) selectedPage = 1;
+
+            console.log("selectedPage : " + selectedPage);
+
+            // 검색어 없을 경우 기본 리스트 호출
+            if(searchContent == '') {
+                params = {
+                    'page' : selectedPage
+                }
+            } else {
+                params = {
+                    'page' : selectedPage,
+                    'keyword' : keyword,
+                    'searchContent' : searchContent
+                }
+            }
+
+            $.ajax({
+                type : "GET",
+                url : "/board/selectList",
+                dataType:"JSON",
+                data : params,
+                success : function(data){
+                      console.log(data);
+
+                      $("#dataTableBody").empty();
+
+                      var a = '';
+                      var totalCount = data.totalCount;
+                      var boardList = data.boardList;
+
+                      $.each(boardList, function(key, value) {
+                         a += "<tr style='cursor:pointer;'><td onclick=location.href='/board/detail?num="+value.board_no+"'>" + value.board_no + '</td>';
+                         a += "<td onclick=location.href='/board/detail?num="+value.board_no+"'>" + value.board_title+ '</td>';
+                         a += "<td onclick=location.href='/board/detail?num="+value.board_no+"'>" + value.insert_date.split('T')[0] + ' ' + value.insert_date.split('T')[1] + '</td>';
+                         a += "<td onclick=location.href='/board/detail?num="+value.board_no+"'>" + value.user_id+ '</td>';
+                         //작성자만 삭제 가능
+                         if(sessionId == value.user_id) {
+                            a += "<td><button onclick='deleteBoard("+value.board_no+")'>삭제</button></td></tr>";
+                         }
+                      });
+                     $("#dataTableBody").html(a);
+
+                     paging(totalCount, selectedPage);
+                }
+            });
+        }
+
+        function paging(totalData, currentPage) {
+          console.log("currentPage : " + currentPage);
+
+          let pageCount = 10;
+
+          totalPage = Math.ceil(totalData / 10); //총 페이지 수
+
+          if(totalPage<pageCount){
+            pageCount = totalPage;
+          }
+
+          let pageGroup = Math.ceil(currentPage / pageCount); // 페이지 그룹
+          let last = pageGroup * pageCount; //화면에 보여질 마지막 페이지 번호
+
+          if (last > totalPage) {
+            last = totalPage;
+          }
+
+          let first = last - (pageCount - 1); //화면에 보여질 첫번째 페이지 번호
+          let next = last + 1;
+          let prev = first - 1;
+
+          let pageHtml = "";
+
+          if (prev > 0) {
+            pageHtml += "<li><a href='#' id='prev'> 이전 </a></li>";
+          }
+
+         //페이징 번호 표시
+          for (var i = first; i <= last; i++) {
+            if (currentPage == i) {
+              pageHtml +=
+                "<li class='on'><a href='#' id='" + i + "'>" + i + "</a></li>";
+            } else {
+              pageHtml += "<li><a href='#' id='" + i + "'>" + i + "</a></li>";
+            }
+          }
+
+          if (last < totalPage) {
+            pageHtml += "<li><a href='#' id='next'> 다음 </a></li>";
+          }
+
+          $("#pagingul").html(pageHtml);
+          let displayCount = "";
+          displayCount = "현재 " + currentPage + " - " + totalPage + " 페이지 / " + totalData + "건";
+          $("#displayCount").text(displayCount);
+
+
+          //페이징 번호 클릭 이벤트
+          $("#pagingul li a").click(function () {
+            let $id = $(this).attr("id");
+            selectedPage = $(this).text();
+
+            if ($id == "next") selectedPage = next;
+            if ($id == "prev") selectedPage = prev;
+
+            //전역변수에 선택한 페이지 번호를 담는다...
+            $("#selectedPage").val(selectedPage);
+            //페이징 표시 재호출
+            paging(totalData, selectedPage);
+            //글 목록 표시 재호출
+            selectList(selectedPage);
+          });
+        }
+
+        $("#searchKeyword").on("change", function() {
+            keyword = $(this).val();
+            console.log(keyword);
+        })
+        $("#searchBtn").on("click", function() {
+            searchContent = $("#searchInput").val();
+            selectList(1);
+        })
+        $("#searchInput").on("keyup",function(key){
+            if(key.keyCode==13) {
+                searchContent = $("#searchInput").val();
+                selectList(1);
+            }
+        });
+
+
+        selectList(globalCurrentPage);
+
+    })
+
+    function deleteBoard(boardNum) {
+        console.log(boardNum);
+        if(confirm('게시물을 삭제하시겠습니까?')) {
+            $.ajax({
+                type : "DELETE",
+                url : "/board/delete",
+                dataType:"text",
+                data : {
+                        'boardNum' : boardNum
+                },
+                success : function(data){
+                    console.log("data : " + data);
+
+                    if(parseInt(data) >= 1) {
+                      alert('삭제되었습니다.');
+                      window.location.replace('/');
+                    } else {
+                        alert('삭제에 문제가 생겼습니다.');
+                    }
+                }
+            });
+        }
+    }
+
+</script>
+
+<body>
+<h1 th:text="|${session.loginMember.user_id}님 안녕하세요!|">로그인 사용자 이름</h1>
+<form th:action="@{/logout}" method="post">
+    <button onclick="location.href='items.html'" type="submit">
+        로그아웃
+    </button>
+</form>
+<form th:action="@{/board/insertForm}" method="get">
+    <button onclick="location.href='items.html'" type="submit">
+        게시글 등록
+    </button>
+</form>
+<hr>
+<div style="text-align: center; float: left;">
+    <select id="searchKeyword">
+        <option value="user_id">작성자</option>
+        <option value="board_title">제목</option>
+        <option value="board_content">내용</option>
+    </select>
+    <input type="text" id="searchInput" />
+    <button id="searchBtn" type="button">
+        검색
+    </button>
+</div>
+
+<br>
+<p id="displayCount"></p>
+<table style="width:500px; text-align:center;">
+    <thead>
+        <tr>
+            <th>번호</th>
+            <th>제목</th>
+            <th>날짜</th>
+            <th>작성자</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody id="dataTableBody">
+    </tbody>
+</table>
+
+<input type="hidden" id="selectedPage" />
+<input type="hidden" id="sessionId" th:value="${session.loginMember.user_id}" />
+
+<ul id="pagingul">
+</ul>
+
+</body>
+</html>
+

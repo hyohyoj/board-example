@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+
+<script th:inline="javascript">
+    $(document).ready(function () {
+
+        function loginCheck() {
+            let userId = $("#user_id").val();
+            let userPw = $("#user_pw").val();
+
+            console.log(userId,userPw);
+
+            $.ajax({
+                type : "POST",
+                url : "/loginCheck",
+                dataType:"text",
+                data : { 'user_id' : userId, 'user_pw' : userPw },
+                success : function(data){
+                      console.log(data);
+                      if(data == '성공') {
+                        $("form").submit();
+                      } else {
+                        $("#errorMsg").html(data);
+                      }
+                }
+            });
+        }
+
+        $("#submit").on("click", function() {
+            loginCheck();
+        })
+
+        $("#user_id").on("keyup",function(key){
+            if(key.keyCode==13) {
+                if(!$("#user_pw").val()) {
+                    $("#user_pw").focus();
+                } else if(!$("#user_id").val()){
+                    $("#user_id").focus();
+                } else {
+                    loginCheck();
+                }
+            }
+        });
+        $("#user_pw").on("keyup",function(key){
+            if(key.keyCode==13) {
+                if(!$("#user_id").val()) {
+                    $("#user_id").focus();
+                } else if(!$("#user_pw").val()){
+                    $("#user_pw").focus();
+                } else {
+                    loginCheck();
+                }
+            }
+        });
+
+    })
+</script>
+
+<body>
+<h1>로그인</h1>
+<form action="/login" th:object="${loginForm}" method="post">
+
+<!--    <div th:if="${#fields.hasGlobalErrors()}">-->
+<!--        <p class="field-error" th:each="err : ${#fields.globalErrors()}" th:text="${err}">전체 오류 메시지</p>-->
+<!--    </div>-->
+    <p id="errorMsg" style="color:red;"></p>
+
+    <div>
+        <label for="user_id">로그인 ID</label>
+        <input type="text" id="user_id" th:field="*{user_id}" class="form-control"
+               th:errorclass="field-error">
+<!--        <div class="field-error" th:errors="*{user_id}" />-->
+    </div>
+    <div>
+        <label for="user_pw">비밀번호</label>
+        <input type="password" id="user_pw" th:field="*{user_pw}" class="form-control"
+               th:errorclass="field-error">
+<!--        <div class="field-error" th:errors="*{user_pw}" />-->
+    </div>
+
+    <hr class="my-4">
+</form>
+<div class="row">
+    <div class="col">
+        <input id="submit" type="submit" value="로그인" />
+    </div>
+    <div class="col">
+        <button id="signUp" type="button" th:onclick="|location.href='@{/signup}'|">회원가입</button>
+    </div>
+    <div class="col">
+        <button onclick="location.href='items.html'"
+                th:onclick="|location.href='@{/}'|"
+                type="button">취소</button>
+    </div>
+</div>
+</body>
+</html>

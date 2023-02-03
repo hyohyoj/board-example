@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Board Insert</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+
+<script th:inline="javascript">
+  $(document).ready(function () {
+    $("#submit").on("click", function() {
+
+      let userId = $("#user_id").val();
+      let content = $("#board_content").val();
+      let title = $("#board_title").val();
+
+      console.log(userId,content,title);
+
+      $.ajax({
+              type : "POST",
+              url : "/board/insert",
+              dataType:"text",
+              data : {
+                      'user_id' : userId,
+                      'board_title' : title,
+                      'board_content' : content
+              },
+              success : function(data){
+                    console.log(data);
+
+                    if(data == "1") {
+                      alert('등록되었습니다.');
+                      window.location.replace('/');
+                    }
+              }
+      });
+
+    });
+
+  })
+</script>
+
+<body>
+<h1>게시글 등록</h1>
+<form th:action="@{/board/insert}" th:object="${boardForm}" method="post">
+
+  <div>
+    <label for="board_title">제목</label>
+    <input type="text" style="width: 397px;" id="board_title" th:field="*{board_title}" class="form-control"
+           th:errorclass="field-error">
+    <div class="field-error" th:errors="*{board_title}" />
+  </div>
+  <div>
+    <label for="board_content">내용</label>
+    <textarea id="board_content" style="width: 397px; height: 240px;" th:field="*{board_content}" class="form-control"
+              th:errorclass="field-error"></textarea>
+    <div class="field-error" th:errors="*{board_content}" />
+  </div>
+  <input type="hidden" id="user_id" th:value="${session.loginMember.user_id}">
+
+  <hr class="my-4">
+
+  <div class="row">
+
+  </div>
+
+
+</form>
+<div class="col">
+  <input id="submit" type="submit" value="작성" />
+</div>
+<div class="col">
+  <button onclick="location.href='items.html'"
+          th:onclick="|location.href='@{/}'|"
+          type="button">취소</button>
+</div>
+</body>
+</html>

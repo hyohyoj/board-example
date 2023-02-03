@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="hyo.boardexample.mapper.BoardMapper">
+
+    <sql id="search">
+        <choose>
+            <when test="keyword == 'user_id'.toString()">
+                WHERE user_id LIKE CONCAT('%',#{searchContent},'%')
+                AND target IS NULL
+            </when>
+            <when test="keyword == 'board_title'.toString()">
+                WHERE board_title LIKE CONCAT('%',#{searchContent},'%')
+                AND target IS NULL
+            </when>
+            <otherwise>
+                WHERE board_content LIKE CONCAT('%',#{searchContent},'%')
+                AND target IS NULL
+            </otherwise>
+        </choose>
+
+    </sql>
+
+    <select id="boardCount" parameterType="hyo.boardexample.domain.Board" resultType="int">
+        SELECT count(*) AS cnt FROM board
+        <if test="searchContent != null">
+            <include refid="search"></include>
+        </if>
+    </select>
+
+    <select id="getList" parameterType="hyo.boardexample.domain.Board" resultType="hyo.boardexample.domain.Board">
+        SELECT
+        *
+        FROM board
+        <if test="searchContent != null">
+            <include refid="search"></include>
+        </if>
+        <choose>
+            <when test="page != null">
+                LIMIT #{page}, 10
+            </when>
+            <otherwise>
+                LIMIT 0, 10
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="getAnswerList" parameterType="Long" resultType="hyo.boardexample.domain.Board">
+        SELECT
+        *
+        FROM board
+        WHERE target = #{num}
+    </select>
+
+    <select id="getOne" parameterType="Integer" resultType="hyo.boardexample.domain.Board">
+        SELECT
+        *
+        FROM board
+        WHERE board_no = #{num}
+    </select>
+
+    <update id="update" parameterType="hyo.boardexample.domain.Board">
+        UPDATE board
+        SET board_content = #{board_content}
+        WHERE board_no = #{board_no}
+    </update>
+
+    <insert id="insert" parameterType="hyo.boardexample.domain.Board">
+        <choose>
+            <when test="target != null">
+                INSERT INTO board(board_content, user_id, target)
+                VALUES(
+                #{board_content},
+                #{user_id},
+                #{target}
+                )
+            </when>
+            <otherwise>
+                INSERT INTO board(board_title, board_content, user_id)
+                VALUES(
+                #{board_title},
+                #{board_content},
+                #{user_id}
+                )
+            </otherwise>
+        </choose>
+    </insert>
+
+    <delete id="delete" parameterType="hyo.boardexample.domain.Board">
+        DELETE FROM board
+        WHERE board_no = #{board_no}
+        OR target = #{board_no}
+    </delete>
+
+</mapper>

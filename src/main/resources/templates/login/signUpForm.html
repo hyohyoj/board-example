@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>SignUp</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+
+<script th:inline="javascript">
+    $(document).ready(function () {
+
+        function signUpCheck() {
+            let userId = $("#user_id").val();
+            let userPw = $("#user_pw").val();
+
+            console.log(userId,userPw);
+
+            if(userId == "" || userPw == "") {
+              $("#errorMsg").html('값을 입력해주세요.');
+              return false;
+            }
+
+            $.ajax({
+                type : "POST",
+                url : "/signUpCheck",
+                dataType:"text",
+                data : { 'user_id' : userId, 'user_pw' : userPw },
+                success : function(data){
+                      console.log(data);
+                      if(data == '성공') {
+                        $("form").submit();
+                      } else {
+                        $("#errorMsg").html(data);
+                      }
+                }
+            });
+        }
+
+        $("#signUp").on("click", function() {
+            signUpCheck();
+        })
+
+        $("#user_id").on("keyup",function(key){
+            if(key.keyCode==13) {
+                if(!$("#user_pw").val()) {
+                    $("#user_pw").focus();
+                } else if(!$("#user_id").val()){
+                    $("#user_id").focus();
+                } else {
+                    signUpCheck();
+                }
+            }
+        });
+        $("#user_pw").on("keyup",function(key){
+            if(key.keyCode==13) {
+                if(!$("#user_id").val()) {
+                    $("#user_id").focus();
+                } else if(!$("#user_pw").val()){
+                    $("#user_pw").focus();
+                } else {
+                    signUpCheck();
+                }
+            }
+        });
+
+    })
+</script>
+
+<body>
+<h1>회원가입</h1>
+<form action="/signup" th:object="${signUpForm}" method="post">
+
+  <!--    <div th:if="${#fields.hasGlobalErrors()}">-->
+  <!--        <p class="field-error" th:each="err : ${#fields.globalErrors()}" th:text="${err}">전체 오류 메시지</p>-->
+  <!--    </div>-->
+  <p id="errorMsg" style="color:red;"></p>
+
+  <div>
+    <label for="user_id">ID</label>
+    <input type="text" id="user_id" th:field="*{user_id}" class="form-control"
+           th:errorclass="field-error">
+    <!--        <div class="field-error" th:errors="*{user_id}" />-->
+  </div>
+  <div>
+    <label for="user_pw">비밀번호</label>
+    <input type="password" id="user_pw" th:field="*{user_pw}" class="form-control"
+           th:errorclass="field-error">
+    <!--        <div class="field-error" th:errors="*{user_pw}" />-->
+  </div>
+
+  <hr class="my-4">
+</form>
+<div class="row">
+  <div class="col">
+    <button id="signUp" type="button">가입하기</button>
+  </div>
+  <div class="col">
+    <button onclick="location.href='items.html'"
+            th:onclick="|location.href='@{/}'|"
+            type="button">취소</button>
+  </div>
+</div>
+</body>
+</html>

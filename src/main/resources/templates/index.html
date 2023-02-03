@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+</head>
+<body>
+<h1>홈</h1>
+<button onclick="location.href='items.html'"
+        th:onclick="|location.href='@{/login}'|" type="button">
+  로그인
+</button>
+</body>
+</html>

@@ -4,7 +4,11 @@
 <mapper namespace="hyo.boardexample.mapper.LoginMapper">
 
     <select id="getUser" parameterType="hyo.boardexample.domain.Login" resultType="hyo.boardexample.domain.Login">
-        SELECT * FROM user_info WHERE user_id = #{user_id}
+        SELECT
+             user_id
+            ,user_pw
+        FROM user_info
+        WHERE user_id = #{user_id}
     </select>
 
     <insert id="insertUser" parameterType="hyo.boardexample.domain.Login">

@@ -20,31 +20,31 @@
       $("#modify").hide();
     }
 
-    $.ajax({
-                type : "GET",
-                url : "/board/selectAnswerList",
-                dataType:"JSON",
-                data : {
-                        'boardNum' : boardNum
-                },
-                success : function(data){
-                      console.log(data);
+<!--    $.ajax({-->
+<!--                type : "GET",-->
+<!--                url : "/board/selectAnswerList",-->
+<!--                dataType:"JSON",-->
+<!--                data : {-->
+<!--                        'boardNum' : boardNum-->
+<!--                },-->
+<!--                success : function(data){-->
+<!--                      console.log(data);-->
 
-                      $("#answerDiv").empty();
+<!--                      $("#answerDiv").empty();-->
 
-                      var a = '';
-                      var boardAnswerList = data.boardAnswerList;
+<!--                      var a = '';-->
+<!--                      var boardAnswerList = data.boardAnswerList;-->
 
-                      $.each(boardAnswerList, function(key, value) {
-                         a += "<span>[답변]</span><br>";
-                         a += "<span>작성자 : "+value.user_id+"</span>&nbsp";
-                         a += "<span>작성날짜 : "+value.insert_date.split('T')[0] + ' ' + value.insert_date.split('T')[1]+"</span><br>";
-                         a += "<textarea style='width: 397px; height: 120px; background-color:lightgray; resize: none;' readonly>"+value.board_content+"</textarea>";
-                         a += "<br>";
-                      });
-                     $("#answerDiv").html(a);
-                }
-        });
+<!--                      $.each(boardAnswerList, function(key, value) {-->
+<!--                         a += "<span>[답변]</span><br>";-->
+<!--                         a += "<span>작성자 : "+value.user_id+"</span>&nbsp";-->
+<!--                         a += "<span>작성날짜 : "+value.insert_date.split('T')[0] + ' ' + value.insert_date.split('T')[1]+"</span><br>";-->
+<!--                         a += "<textarea style='width: 397px; height: 120px; background-color:lightgray; resize: none;' readonly>"+value.board_content+"</textarea>";-->
+<!--                         a += "<br>";-->
+<!--                      });-->
+<!--                     $("#answerDiv").html(a);-->
+<!--                }-->
+<!--        });-->
 
     $("#modify").on("click", function() {
 
@@ -151,11 +151,11 @@
   <tbody id="dataTableBody">
     <tr>
       <td id="boardNum" th:text="${boardForm.board_no}">번호 부분</td>
-      <td th:text="${boardForm.board_title}">제목 부분</td>
+      <td th:utext="${boardForm.board_title}">제목 부분</td>
       <td th:text="${#strings.arraySplit(boardForm.insert_date, 'T')[0] + ' ' + #strings.arraySplit(boardForm.insert_date, 'T')[1]}">날짜 부분</td>
       <td id="boardUser" th:text="${boardForm.user_id}">작성자 부분</td>
     </tr>
-    <tr><td colspan="4"><textarea id="content" style="width: 397px; height: 240px; resize: none;" th:text="${boardForm.board_content}" readonly>내용 부분</textarea></td></tr>
+    <tr><td colspan="4"><textarea id="content" style="width: 397px; height: 240px; resize: none;" th:utext="${boardForm.board_content}" readonly>내용 부분</textarea></td></tr>
   </tbody>
 </table>
 
@@ -164,10 +164,20 @@
 <button id="modify">수정</button>
 <button style="display: none;" id="cancel">취소</button>
 <button id="answerInsert">답변하기</button>
+<br>
+<textarea id="answerContent" style="width: 397px; height: 120px; display: none; resize: none;"></textarea>
 
 <div id="answerDiv">
+  <div th:each="answer : ${answerList}">
+    <span>[답변]</span><br>
+    <span th:text="|작성자 : ${answer.user_id}|">작성자</span>
+    &nbsp
+    <span th:text="${'작성날짜 : ' + #strings.arraySplit(answer.insert_date, 'T')[0] + ' ' + #strings.arraySplit(answer.insert_date, 'T')[1]}">작성날짜</span>
+    <br>
+    <textarea style='width: 397px; height: 120px; background-color:lightgray; resize: none;' readonly th:text="${answer.board_content}"></textarea>
+    <br>
+  </div>
 </div>
-<textarea id="answerContent" style="width: 397px; height: 120px; display: none; resize: none;"></textarea>
 
 </body>
 </html>

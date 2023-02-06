@@ -9,6 +9,7 @@
 
 <script th:inline="javascript">
   $(document).ready(function () {
+
     $("#submit").on("click", function() {
 
       let userId = $("#user_id").val();
@@ -39,6 +40,52 @@
     });
 
   })
+
+      //파일 인덱스 처리용 전역 변수
+      let fileIdx = 0;
+
+      function addFile() {
+
+        fileIdx++;
+
+        const fileHtml = `
+            <div data-name="fileDiv">
+                <label for="file_${fileIdx}"></label>
+                <div>
+                    <input type="file" name="files" id="file_${fileIdx}" class="upload-hidden" onchange="changeFileName(this)" />
+
+                    <button type="button" onclick="removeFile(this)">-</button>
+                </div>
+            </div>
+        `;
+
+        $('#btnDiv').before(fileHtml);
+    }
+
+    function removeFile(elem) {
+
+        const prevTag = $(elem).prev().prop('tagName');
+
+        //첫번째 파일인 경우 div 삭제 대신 file input 초기화
+        if (prevTag === 'BUTTON') {
+            const file = $(elem).prevAll('input[type="file"]');
+            file.val('');
+            return false;
+        }
+
+        const target = $(elem).parents('div[data-name="fileDiv"]');
+        target.remove();
+    }
+
+    function changeFileName(file) {
+
+        file = $(file);
+        const filename = file[0].files[0].name;
+<!--        const target = file.prevAll('input');-->
+<!--        target.val(filename);-->
+
+        console.log("filename : " + filename);
+    }
 </script>
 
 <body>
@@ -47,7 +94,7 @@
 
   <div>
     <label for="board_title">제목</label>
-    <input type="text" style="width: 397px;" id="board_title" th:field="*{board_title}" class="form-control"
+    <input type="text" style="width: 397px;" id="board_title" th:field="*{board_title}" class="form-control" enctype="multipart/form-data"
            th:errorclass="field-error">
     <div class="field-error" th:errors="*{board_title}" />
   </div>
@@ -57,16 +104,21 @@
               th:errorclass="field-error"></textarea>
     <div class="field-error" th:errors="*{board_content}" />
   </div>
+    <hr>
+    <div data-name="fileDiv">
+        <label for="file_0"><strong>첨부 파일</strong></label>
+        <div>
+            <input type="file" name="files" id="file_0" class="upload-hidden" onchange="changeFileName(this)" />
+            <button type="button" onclick="addFile()">+</button>
+            <button type="button" onclick="removeFile(this)">-</button>
+        </div>
+    </div>
+  <hr id="btnDiv">
+
   <input type="hidden" id="user_id" th:value="${session.loginMember.user_id}">
 
-  <hr class="my-4">
-
-  <div class="row">
-
-  </div>
-
-
 </form>
+
 <div class="col">
   <input id="submit" type="submit" value="작성" />
 </div>
@@ -75,5 +127,6 @@
           th:onclick="|location.href='@{/}'|"
           type="button">취소</button>
 </div>
+
 </body>
 </html>

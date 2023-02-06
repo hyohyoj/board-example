@@ -1,0 +1,80 @@
+use board_db;
+
+create table user_info (
+	user_id varchar(50) not null primary key,
+    user_pw varchar(100)
+);
+
+create table board (
+	board_no int not null auto_increment primary key,
+	user_id varchar(50) not null,
+    board_title varchar(100),
+    board_content varchar(150),
+    insert_date datetime default current_timestamp
+);
+
+create table file_table (
+	file_no int not null auto_increment primary key,
+    board_no int not null,
+    original_name varchar(500) not null,
+    save_name varchar(200) not null,
+    size int not null,
+    delete_yn char(1) not null default 'N',
+    insert_time datetime default current_timestamp,
+    delete_time datetime,
+    foreign key (board_no) references board(board_no)
+);
+
+select * from file_table;
+
+desc file_table;
+
+select *
+from information_schema.TABLE_CONSTRAINTS
+where TABLE_SCHEMA = 'board_db';
+
+alter table board add column target int default null;
+
+
+select count(*) from board;
+select * from board order by board_no desc;
+select * from board where user_id = 'test' limit 0, 10;
+
+show processlist;
+kill 538;
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `insertLoop`()
+BEGIN
+    DECLARE i INT DEFAULT 1;
+    WHILE i <= 500000 DO
+        INSERT INTO board_db.board(user_id, board_title, board_content)
+				VALUES ('hyo', concat('test', i), '테스트입니다');
+        SET i = i + 1;
+    END WHILE;
+END
+CALL insertLoop;
+
+select * from user_info;
+select * from board order by board_no desc;
+
+delete from board where board_no in (1099486, 1099489, 1099490);
+
+select * from board where board_title is null;
+
+desc board;
+
+select * from board
+where board_title like concat('%','<script>alert(111);</script>','%')
+and target is null
+limit 0,10;
+
+select * from board where user_id = 'test';
+
+desc user_info;
+alter table user_info change user_pw user_pw char(60);
+
+update user_info set user_pw='$2a$10$bMZA/uTTvtTgutjaWS0fzOwRnnI83SzbMoUEcI2pLiCFAKBZZxf6u' where user_id = 'hyo';
+
+insert into user_info values('hyo', '1234');
+
+

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+        <tr style='cursor:pointer;' th:each="board : ${boardList}">
+          <td th:onclick="|location.href='/board/detail?num=${board.board_no}'|" th:text="${board.board_no}"></td>
+          <td th:onclick="|location.href='/board/detail?num=${board.board_no}'|" th:text="${board.board_title}"></td>
+          <td th:onclick="|location.href='/board/detail?num=${board.board_no}'|" th:text="${#strings.arraySplit(board.insert_date, 'T')[0] + ' ' + #strings.arraySplit(board.insert_date, 'T')[1]}"></td>
+          <td th:onclick="|location.href='/board/detail?num=${board.board_no}'|" th:text="${board.user_id}"></td>
+          <div th:if="${sessionId == board.user_id}">
+            <td><button th:onclick="|deleteBoard(${board.board_no})|">삭제</button></td>
+          </div>
+        </tr>
+</body>
+</html>

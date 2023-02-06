@@ -1,6 +1,7 @@
 package hyo.boardexample.Controller;
 
 import hyo.boardexample.Service.BoardService;
+import hyo.boardexample.common.SessionConstants;
 import hyo.boardexample.domain.Board;
 import hyo.boardexample.domain.Login;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +9,7 @@ import org.json.JSONObject;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 
 import java.util.List;
 
@@ -18,40 +20,78 @@ public class BoardController {
 
     private final BoardService boardService;
 
+    //컨트롤러 내에서 발생하는 예외를 모두 처리해준다
+    @ExceptionHandler(value = Exception.class)
+    public String controllerExceptionHandler(Exception e) {
+        return "/error";
+    }
+
+    // json 형태로 데이터 반환
+//    @GetMapping("/selectList")
+//    @ResponseBody
+//    public String selectList(@ModelAttribute Board boardModel) {
+//
+//        List<Board> boardList;
+//        int totalCount;
+//        JSONObject jo = new JSONObject();
+//
+//        boardModel.setPage((boardModel.getPage()-1) * 10);
+//
+//        try {
+//            boardList = boardService.boardList(boardModel);
+//            totalCount = boardService.boardCount(boardModel);
+//
+//            jo.put("boardList", boardList);
+//            jo.put("totalCount", totalCount);
+//        } catch (Exception e) {
+//            return "/error";
+//        }
+//        return jo.toString();
+//    }
+
+    // ModelAndView 형태로 데이터가 세팅 된 뷰를 반환
     @GetMapping("/selectList")
     @ResponseBody
-    public String selectList(
-//            @RequestParam(value="page", defaultValue = "1") Integer page,
-//            @RequestParam(value="keyword", defaultValue = "") String keyword,
-//            @RequestParam(value="searchContent", defaultValue = "") String searchContent
-            @ModelAttribute Board boardModel
-    ) {
+    public ModelAndView selectList(@ModelAttribute Board boardModel, @SessionAttribute(name = SessionConstants.LOGIN_MEMBER, required = false) Login loginMember) {
+
+        List<Board> boardList = null;
+        ModelAndView mv = new ModelAndView();
 
         boardModel.setPage((boardModel.getPage()-1) * 10);
 
-//        System.out.println("keyword : " + boardModel.getKeyword() + ", searchContent : " + boardModel.getSearchContent() + ", page : " + boardModel.getPage());
-//        List<Board> boardList = boardService.boardList((page-1) * 10);
-        List<Board> boardList = boardService.boardList(boardModel);
-        int totalCount = boardService.boardCount(boardModel);
 
-        JSONObject jo = new JSONObject();
-        jo.put("boardList", boardList);
-        jo.put("totalCount", totalCount);
+        try{
+            boardList = boardService.boardList(boardModel);
 
-        //System.out.println(jo.toString());
-        return jo.toString();
+            mv.setViewName("/boards/setSelectList");
+            mv.addObject("boardList", boardList);
+            mv.addObject("sessionId", loginMember.getUser_id());
+        } catch (Exception e) {
+            mv.setViewName("/error");
+            return mv;
+        }
+        return mv;
+    }
+
+    @GetMapping("/getCount")
+    @ResponseBody
+    public int getTotalCount(@ModelAttribute Board boardModel) {
+        return boardService.boardCount(boardModel);
     }
 
     @GetMapping("/selectAnswerList")
     @ResponseBody
-    public String selectAnswerList(@RequestParam(value="boardNum") Long num) {
+    public String selectAnswerList(@RequestParam(value="boardNum") Integer num) {
 
-        List<Board> boardList = boardService.boardAnswerList(num);
-
+        List<Board> boardList = null;
         JSONObject jo = new JSONObject();
-        jo.put("boardAnswerList", boardList);
 
-        //System.out.println(jo.toString());
+        try{
+            boardList = boardService.boardAnswerList(num);
+            jo.put("boardAnswerList", boardList);
+        } catch (Exception e) {
+            return "/error";
+        }
         return jo.toString();
     }
 
@@ -102,12 +142,15 @@ public class BoardController {
         Board board = new Board();
         board.setBoard_no(num);
 
+        boardService.deleteAnswer(board);
+
         return boardService.delete(board);
     }
 
     @GetMapping("/detail")
     public String detail(@RequestParam(value="num", defaultValue = "1") Integer num, Model model) {
         model.addAttribute("boardForm", boardService.boardOne(num));
+        model.addAttribute("answerList", boardService.boardAnswerList(num));
         return "/boards/detail";
     }
 }

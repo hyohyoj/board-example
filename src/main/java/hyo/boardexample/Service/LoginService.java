@@ -16,4 +16,12 @@ public class LoginService {
     public Login getUser(Login loginForm) { return loginMapper.getUser(loginForm); }
 
     public int insertUser(Login signUpForm) { return loginMapper.insertUser(signUpForm); }
+
+    public String stringTest(String input){
+        return input;
+    }
+
+    public Login dtoTest(Login login) {
+        return new Login(login.getUser_id(), login.getUser_pw());
+    }
 }

@@ -23,8 +23,26 @@ import javax.servlet.http.HttpSession;
 public class LoginController {
 
     private final LoginService loginService;
-
     private final PasswordEncoder pwEncoder;
+
+    //컨트롤러 내에서 발생하는 예외를 모두 처리해준다
+    @ExceptionHandler(value = Exception.class)
+    public String controllerExceptionHandler(Exception e) {
+        return "/error";
+    }
+
+    //xss 필터링 테스트
+    @PostMapping("/parameter")
+    @ResponseBody
+    public String strInput(@RequestParam String input){
+        return loginService.stringTest(input);
+    }
+    //xss 필터링 json 형식 테스트
+    @PostMapping("/dto")
+    @ResponseBody
+    public Login dtoInput(@RequestBody Login login){
+        return loginService.dtoTest(login);
+    }
 
     @GetMapping("/login")
     public String loginForm(Model model) {

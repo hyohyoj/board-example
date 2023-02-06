@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Error!</title>
+</head>
+<body>
+<h1>에러가 발생하였습니다!</h1>
+<button onclick="location.href='items.html'"
+        th:onclick="|location.href='@{/}'|" type="button">
+  홈으로
+</button>
+</body>
+</html>

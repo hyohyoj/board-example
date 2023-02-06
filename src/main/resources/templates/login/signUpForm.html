@@ -14,10 +14,20 @@
             let userId = $("#user_id").val();
             let userPw = $("#user_pw").val();
 
-            console.log(userId,userPw);
+            console.log(userId + ', ' + userPw);
 
             if(userId == "" || userPw == "") {
               $("#errorMsg").html('값을 입력해주세요.');
+              return false;
+            }
+
+            if(!validationId(userId)) {
+              $("#errorMsg").html('아이디 형식을 확인해주세요');
+              return false;
+            }
+
+            if(!validationPw(userPw)) {
+              $("#errorMsg").html('비밀번호 형식을 확인해주세요');
               return false;
             }
 
@@ -35,6 +45,16 @@
                       }
                 }
             });
+        }
+
+        function validationId(str) {
+            //return /^[a-z]+[a-z0-9]$/.test(str);
+            return /^[a-z]+(?=.*[a-z])(?=.*\d)[a-z\d]{3,20}$/.test(str);
+        }
+
+        function validationPw(str) {
+            return /^(?=.*[a-zA-Z])((?=.*[0-9])|(?=.*[$`~!@$!%*#^?&\\(\\)\-_=+])).{8,20}$/.test(str);
+            //return /^(?=.*[a-zA-z])(?=.*[0-9])(?=.*[$`~!@$!%*#^?&\\(\\)\-_=+]).{8,16}$/.test(str);
         }
 
         $("#signUp").on("click", function() {
@@ -82,12 +102,15 @@
            th:errorclass="field-error">
     <!--        <div class="field-error" th:errors="*{user_id}" />-->
   </div>
+  <span style="color:gray;">아이디의 첫 글자는 영문 소문자이고, 영문 소문자와 숫자를 가진 3~20자리 문자열이어야 합니다.</span>
+  <br>
   <div>
     <label for="user_pw">비밀번호</label>
     <input type="password" id="user_pw" th:field="*{user_pw}" class="form-control"
            th:errorclass="field-error">
     <!--        <div class="field-error" th:errors="*{user_pw}" />-->
   </div>
+  <span style="color:gray;">비밀번호는 영문 대소문자, 숫자, 특수문자이며 1개 이상의 특수문자 또는 숫자를 가진 8~20자리 문자열이어야 합니다.</span>
 
   <hr class="my-4">
 </form>

@@ -48,12 +48,11 @@ ul li.on a {
         let searchContent = $("#searchInput").val();
         let sessionId = $("#sessionId").val();
         let params;
+        let totalCount;
 
         function selectList(selectedPage) {
 
             if(typeof selectedPage == 'undefined' || selectedPage == '' ) selectedPage = 1;
-
-            console.log("selectedPage : " + selectedPage);
 
             // 검색어 없을 경우 기본 리스트 호출
             if(searchContent == '') {
@@ -70,33 +69,55 @@ ul li.on a {
 
             $.ajax({
                 type : "GET",
-                url : "/board/selectList",
-                dataType:"JSON",
+                url : "/board/getCount",
+                dataType:"text",
                 data : params,
                 success : function(data){
-                      console.log(data);
+                    console.log("totalCount : " + data);
+                    totalCount = data;
 
-                      $("#dataTableBody").empty();
+                    $.ajax({
+                        type : "GET",
+                        url : "/board/selectList",
+                        dataType:"text",
+                        async:false,
+                        data : params,
+                        success : function(data){
+                              // 테이블 초기화
+                              $("#dataTableBody").empty();
 
-                      var a = '';
-                      var totalCount = data.totalCount;
-                      var boardList = data.boardList;
-
-                      $.each(boardList, function(key, value) {
-                         a += "<tr style='cursor:pointer;'><td onclick=location.href='/board/detail?num="+value.board_no+"'>" + value.board_no + '</td>';
-                         a += "<td onclick=location.href='/board/detail?num="+value.board_no+"'>" + value.board_title+ '</td>';
-                         a += "<td onclick=location.href='/board/detail?num="+value.board_no+"'>" + value.insert_date.split('T')[0] + ' ' + value.insert_date.split('T')[1] + '</td>';
-                         a += "<td onclick=location.href='/board/detail?num="+value.board_no+"'>" + value.user_id+ '</td>';
-                         //작성자만 삭제 가능
-                         if(sessionId == value.user_id) {
-                            a += "<td><button onclick='deleteBoard("+value.board_no+")'>삭제</button></td></tr>";
-                         }
-                      });
-                     $("#dataTableBody").html(a);
-
-                     paging(totalCount, selectedPage);
+                              $("#dataTableBody").html(data);
+                              paging(totalCount, selectedPage);
+                        }
+                    });
                 }
             });
+
+<!--            $.ajax({-->
+<!--                type : "GET",-->
+<!--                url : "/board/selectList",-->
+<!--                dataType:"JSON",-->
+<!--                data : params,-->
+<!--                success : function(data){-->
+<!--                      $("#dataTableBody").empty();-->
+<!--                      -->
+<!--                      let a = '';-->
+<!--                      let boardList = data.boardList;-->
+<!--                      let totalCount = data.totalCount;-->
+<!--                      $.each(boardList, function(key, value) {-->
+<!--                         a += "<tr style='cursor:pointer;'><td onclick=location.href='/board/detail?num="+value.board_no+"'>" + value.board_no + '</td>';-->
+<!--                         a += "<td onclick=location.href='/board/detail?num="+value.board_no+"'>" + value.board_title+ '</td>';-->
+<!--                         a += "<td onclick=location.href='/board/detail?num="+value.board_no+"'>" + value.insert_date.split('T')[0] + ' ' + value.insert_date.split('T')[1] + '</td>';-->
+<!--                         a += "<td onclick=location.href='/board/detail?num="+value.board_no+"'>" + value.user_id+ '</td>';-->
+<!--                         //작성자만 삭제 가능-->
+<!--                         if(sessionId == value.user_id) {-->
+<!--                            a += "<td><button onclick='deleteBoard("+value.board_no+")'>삭제</button></td></tr>";-->
+<!--                         }-->
+<!--                      });-->
+<!--                     $("#dataTableBody").html(a);-->
+<!--                     paging(totalCount, selectedPage);-->
+<!--                }-->
+<!--            });-->
         }
 
         function paging(totalData, currentPage) {
@@ -178,7 +199,6 @@ ul li.on a {
                 selectList(1);
             }
         });
-
 
         selectList(globalCurrentPage);
 

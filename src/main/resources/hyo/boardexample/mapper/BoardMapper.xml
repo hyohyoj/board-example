@@ -22,7 +22,7 @@
     </sql>
 
     <select id="boardCount" parameterType="hyo.boardexample.domain.Board" resultType="int">
-        SELECT count(*) AS cnt FROM board
+        SELECT count(board_no) AS cnt FROM board
         <if test="searchContent != null">
             <include refid="search"></include>
         </if>
@@ -30,7 +30,12 @@
 
     <select id="getList" parameterType="hyo.boardexample.domain.Board" resultType="hyo.boardexample.domain.Board">
         SELECT
-        *
+             board_no
+            ,user_id
+            ,board_title
+            ,board_content
+            ,insert_date
+            ,target
         FROM board
         <if test="searchContent != null">
             <include refid="search"></include>
@@ -45,16 +50,22 @@
         </choose>
     </select>
 
-    <select id="getAnswerList" parameterType="Long" resultType="hyo.boardexample.domain.Board">
+    <select id="getAnswerList" parameterType="Integer" resultType="hyo.boardexample.domain.Board">
         SELECT
-        *
+             user_id
+            ,board_content
+            ,insert_date
         FROM board
         WHERE target = #{num}
     </select>
 
     <select id="getOne" parameterType="Integer" resultType="hyo.boardexample.domain.Board">
         SELECT
-        *
+             board_no
+            ,user_id
+            ,board_title
+            ,board_content
+            ,insert_date
         FROM board
         WHERE board_no = #{num}
     </select>
@@ -88,8 +99,12 @@
 
     <delete id="delete" parameterType="hyo.boardexample.domain.Board">
         DELETE FROM board
-        WHERE board_no = #{board_no}
-        OR target = #{board_no}
+        WHERE board_no in (#{board_no})
+    </delete>
+
+    <delete id="deleteAnswer" parameterType="hyo.boardexample.domain.Board">
+        DELETE FROM board
+        WHERE target in (#{board_no})
     </delete>
 
 </mapper>

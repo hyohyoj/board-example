@@ -25,7 +25,11 @@ dependencies {
 	implementation 'javax.servlet:jstl'
 	implementation 'org.json:json:20190722'
 	implementation 'com.googlecode.json-simple:json-simple:1.1.1'
-	implementation 'org.springframework.boot:spring-boot-starter-security'    /* Spring security */
+	//파일 처리
+	implementation 'commons-io:commons-io:2.6'
+	implementation 'commons-fileupload:commons-fileupload:1.4'
+	/* Spring security */
+	implementation 'org.springframework.boot:spring-boot-starter-security'
 	//xss예방 - 네이버 filter
 	implementation 'com.navercorp.lucy:lucy-xss-servlet:2.0.0'
 	implementation 'com.navercorp.lucy:lucy-xss:1.6.3'

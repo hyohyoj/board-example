@@ -76,7 +76,7 @@
         WHERE board_no = #{board_no}
     </update>
 
-    <insert id="insert" parameterType="hyo.boardexample.domain.Board">
+    <insert id="insert" parameterType="hyo.boardexample.domain.Board" useGeneratedKeys="true" keyProperty="board_no">
         <choose>
             <when test="target != null">
                 INSERT INTO board(board_content, user_id, target)

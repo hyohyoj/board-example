@@ -12,29 +12,56 @@
 
     $("#submit").on("click", function() {
 
+      // file
+<!--      let file = $("#file_0")[0].files[0];-->   // <- input 태그에서 file 정보 얻어오는 법
+<!--      let formData = new FormData();-->
+      let file = $("#boardFileInsertForm")[0];      // <- form에 있는 모든 file 정보 얻어오는 법
+      let formData = new FormData(file);
+      formData.append('files', file);
+
+      // board json
       let userId = $("#user_id").val();
       let content = $("#board_content").val();
       let title = $("#board_title").val();
 
-      console.log(userId,content,title);
+      let data = {
+              'user_id' : userId,
+              'board_title' : title,
+              'board_content' : content
+      }
+      formData.append('board', new Blob([JSON.stringify(data)], {type: 'application/json'}));
+
+      // 값 출력 해보기
+      for (let value of formData.values()) {
+        console.log(value);
+      }
 
       $.ajax({
               type : "POST",
               url : "/board/insert",
               dataType:"text",
-              data : {
-                      'user_id' : userId,
-                      'board_title' : title,
-                      'board_content' : content
-              },
+              enctype: 'multipart/form-data',
+              data : formData,
+              contentType: false,
+              processData: false,
+              cache: false,
               success : function(data){
                     console.log(data);
 
-                    if(data == "1") {
+                    if(data == '파일 업로드 성공' || data == '게시글 업로드 성공') {
                       alert('등록되었습니다.');
                       window.location.replace('/');
+                    } else {
+                      alert('업로드 실패');
                     }
-              }
+              },
+              error : function(request,status,error) {
+                    if(status == '500') {
+                        alert('에러가 발생했습니다.');
+                    } else {
+                        alert('파일 사이즈가 너무 큽니다.');
+                    }
+                }
       });
 
     });
@@ -78,11 +105,8 @@
     }
 
     function changeFileName(file) {
-
         file = $(file);
         const filename = file[0].files[0].name;
-<!--        const target = file.prevAll('input');-->
-<!--        target.val(filename);-->
 
         console.log("filename : " + filename);
     }
@@ -90,7 +114,7 @@
 
 <body>
 <h1>게시글 등록</h1>
-<form th:action="@{/board/insert}" th:object="${boardForm}" method="post">
+<form th:action="@{/board/insert}" th:object="${boardForm}" method="post" enctype="multipart/form-data" id="boardFileInsertForm">
 
   <div>
     <label for="board_title">제목</label>

@@ -6,7 +6,20 @@
     <title>Board Detail</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
-
+<style>
+    .labelStyle {
+      display: inline-block;
+      padding: .5em .75em;
+      font-size: inherit;
+      line-height: normal;
+      vertical-align: middle;
+      background-color: lightskyblue;
+      cursor: pointer;
+      border: 1px solid #ebebeb;
+      border-bottom-color: #e2e2e2;
+      border-radius: .25em;
+    }
+</style>
 <script th:inline="javascript">
   $(document).ready(function () {
 
@@ -14,38 +27,14 @@
     let boardUser = $("#boardUser").text();
     let boardContent = $("#content").val();
     let sessionId = $("#sessionId").val();
+    let fileHtml = $("#fileModifyDiv").html();
 
     //작성자인 경우에만 수정 가능
     if(sessionId != boardUser) {
       $("#modify").hide();
     }
 
-<!--    $.ajax({-->
-<!--                type : "GET",-->
-<!--                url : "/board/selectAnswerList",-->
-<!--                dataType:"JSON",-->
-<!--                data : {-->
-<!--                        'boardNum' : boardNum-->
-<!--                },-->
-<!--                success : function(data){-->
-<!--                      console.log(data);-->
-
-<!--                      $("#answerDiv").empty();-->
-
-<!--                      var a = '';-->
-<!--                      var boardAnswerList = data.boardAnswerList;-->
-
-<!--                      $.each(boardAnswerList, function(key, value) {-->
-<!--                         a += "<span>[답변]</span><br>";-->
-<!--                         a += "<span>작성자 : "+value.user_id+"</span>&nbsp";-->
-<!--                         a += "<span>작성날짜 : "+value.insert_date.split('T')[0] + ' ' + value.insert_date.split('T')[1]+"</span><br>";-->
-<!--                         a += "<textarea style='width: 397px; height: 120px; background-color:lightgray; resize: none;' readonly>"+value.board_content+"</textarea>";-->
-<!--                         a += "<br>";-->
-<!--                      });-->
-<!--                     $("#answerDiv").html(a);-->
-<!--                }-->
-<!--        });-->
-
+    // 게시글 수정
     $("#modify").on("click", function() {
 
       let status = $("#modify").text();
@@ -55,30 +44,64 @@
         $("#cancel").show();
         $("#content").attr("readonly", false);
         $("#content").focus();
-        $("#modify").text("완료");
         $("#answerInsert").hide();
+        $("#fileDiv").hide();
+        $("#fileModifyDiv").show();
+        $("#modify").text("완료");
       }
       else if(status == "완료") {
-        $("#cancel").hide();
-        $("#content").attr("readonly", true);
-        $("#modify").text("수정");
-        $("#answerInsert").show();
+<!--        $("#cancel").hide();-->
+<!--        $("#content").attr("readonly", true);-->
+<!--        $("#answerInsert").show();-->
+<!--        $("#fileDiv").show();-->
+<!--        $("#fileModifyDiv").hide();-->
+<!--        $("#modify").text("수정");-->
+
+        let file = $("#boardFileInsertForm")[0];
+        let formData = new FormData(file);
+        formData.append('files', file);
+
+        let fileNumList = [];
+        $("input[name='fileNo']").each((index, item) => {
+            fileNumList.push(item.value);
+        });
+
+        let data = {
+            'board_no' : boardNum,
+            'board_content' : changedContent,
+            'changeYn' : $("#changeYn").val(),
+            'fileNumList' : fileNumList
+        }
+        formData.append('board', new Blob([JSON.stringify(data)], {type: 'application/json'}));
 
         $.ajax({
-                type : "PUT",
+                type : "POST",
                 url : "/board/update",
                 dataType:"text",
-                data : {
-                        'boardNum' : boardNum,
-                        'boardContent' : changedContent
-                },
+                enctype: 'multipart/form-data',
+                data : formData,
+                contentType: false,
+                processData: false,
+                cache: false,
                 success : function(data){
                       console.log(data);
 
-                      if(data == "1") {
-                        alert('수정하였습니다.');
-                        boardContent = changedContent;
+                      if(parseInt(data) == 0) {
+                        alert('처리되지 않았습니다.');
+                      } else if(parseInt(data) == 1) {
+                        alert('게시글이 수정되었습니다.');
+                        location.reload();
+                      } else {
+                        alert('게시글 및 파일이 수정되었습니다.');
+                        location.reload();
                       }
+                },
+                error : function(request,status,error) {
+                    if(status == '500') {
+                        alert('에러가 발생했습니다.');
+                    } else {
+                        alert('파일 사이즈가 너무 큽니다.');
+                    }
                 }
         });
       }
@@ -95,8 +118,15 @@
       $("#answerContent").val("");
       $("#modify").text("수정");
       $("#answerInsert").text("답변하기");
+
+      $("#fileModifyDiv").html(fileHtml);
+      $("#fileDiv").show();
+      $("#fileModifyDiv").hide();
+
+      $("#changeYn").val('N');
     });
 
+    // 답변 등록
     $("#answerInsert").on("click", function() {
 
       let status = $("#answerInsert").text();
@@ -110,13 +140,13 @@
         $("#answerInsert").text("완료");
       }
       else if(status == "완료") {
-        $("#cancel").hide();
-        $("#modify").show();
-        $("#answerContent").hide();
+<!--        $("#cancel").hide();-->
+<!--        $("#modify").show();-->
+<!--        $("#answerContent").hide();-->
 
         $.ajax({
                 type : "POST",
-                url : "/board/insert",
+                url : "/board/insertAnswer",
                 dataType:"text",
                 data : {
                         'user_id' : sessionId,
@@ -134,8 +164,72 @@
         });
       }
     });
-
   })
+
+      //파일 인덱스 처리용 전역 변수
+      const fileList = /*[[ ${fileList} ]]*/;
+      let fileIdx;
+
+      if(fileList == '' || fileList == undefined || fileList == null || fileList == 'null' ) {
+        fileIdx = 0;
+      } else {
+        fileIdx = fileList.length
+      }
+
+      function addFile() {
+
+        $("#changeYn").val('Y');
+        fileIdx++;
+
+        const fileHtml = `
+            <div data-name="fileDiv">
+                <label for="file_${fileIdx}"></label>
+                <div>
+                    <input type="text" style="display: inline-block; width: 350px; height: 30px;" value="파일 찾기" readonly />
+                    <label for="file_${fileIdx}" class="labelStyle">파일 선택</label>
+                    <input type="file" name="files" id="file_${fileIdx}" style="display: none;" onchange="changeFileName(this)" />
+                    <button type="button" onclick="removeFile(this)">-</button>
+                </div>
+            </div>
+        `;
+
+        $('#btnDiv').before(fileHtml);
+    }
+
+    function removeFile(elem) {
+
+        $("#changeYn").val('Y');
+        const prevTag = $(elem).prev().prop('tagName');
+
+        //첫번째 파일인 경우 div 삭제 대신 file input 초기화
+        if (prevTag === 'BUTTON') {
+            const file = $(elem).prevAll('input[type="file"]');
+            const text = $(elem).prevAll('input[type="text"]');
+
+            file.val('');
+            text.val('파일 찾기');
+
+            $(elem).prevAll('input[name="fileNo"]').remove();
+            return false;
+        }
+
+        const target = $(elem).parents('div[data-name="fileDiv"]');
+        target.remove();
+    }
+
+    function changeFileName(file) {
+
+        $("#changeYn").val('Y');
+
+        file = $(file);
+        const filename = file[0].files[0].name;
+        const target = file.prevAll('input[type!="hidden"]');
+	    target.val(filename);
+
+        file.prevAll('input[name="fileNo"]').remove();
+
+        console.log("filename : " + filename);
+    }
 </script>
 
 <body>
@@ -159,8 +253,56 @@
   </tbody>
 </table>
 
+<div id="fileDiv" style="border:solid 1px black; display: inline-block;">
+    <span>첨부 파일</span><br>
+    <div th:each="row, status : ${fileList}">
+        <a  th:href="@{/board/download( fileNo=${row.file_no} )}">
+            [[ ${row.original_name} ]]
+        </a>
+        <br>
+    </div>
+</div>
+
+<form th:action="@{/board/update}" th:object="${fileList}" method="post" enctype="multipart/form-data" id="boardFileInsertForm">
+
+    <!--/* 파일이 변경된 경우, 해당 파라미터를 이용하여 파일 삭제 및 재등록 처리 */-->
+    <input type="hidden" id="changeYn" value="N" />
+
+
+    <div id="fileModifyDiv" style="display: none;">
+        <span>첨부 파일</span><br>
+
+        <!-- 파일이 없을 경우 -->
+        <div th:if="${#lists.isEmpty( fileList )}" data-name="fileDiv">
+            <label for="file_0"></label>
+            <div>
+                <input type="text" style="display: inline-block; width: 350px; height: 30px;" value="파일 찾기" readonly />
+                <label for="file_0" class="labelStyle">파일 선택</label>
+                <input type="file" name="files" id="file_0" style="display: none;" onchange="changeFileName(this)" />
+                <button type="button" onclick="addFile()">+</button>
+                <button type="button" onclick="removeFile(this)">-</button>
+            </div>
+        </div>
+
+        <!-- 파일이 있을 경우 -->
+        <div th:each="row, status : ${fileList}" data-name="fileDiv">
+            <label th:for="|file_${status.index}|"></label>
+            <div>
+                <input type="hidden" name="fileNo" th:value="${row.file_no}" />
+                <input type="text" style="display: inline-block; width: 350px; height: 30px;" th:value="${row.original_name}" readonly />
+                <label th:for="|file_${status.index}|" class="labelStyle">파일 선택</label>
+                <input type="file" name="files" th:id="|file_${status.index}|" style="display: none;" onchange="changeFileName(this)"/>
+                <button th:if="${status.first}" type="button" onclick="addFile()">+</button>
+                <button type="button" onclick="removeFile(this)">-</button>
+            </div>
+        </div>
+        <hr id="btnDiv">
+    </div>
+</form>
+
 <input type="hidden" id="sessionId" th:value="${session.loginMember.user_id}" />
 
+<br>
 <button id="modify">수정</button>
 <button style="display: none;" id="cancel">취소</button>
 <button id="answerInsert">답변하기</button>

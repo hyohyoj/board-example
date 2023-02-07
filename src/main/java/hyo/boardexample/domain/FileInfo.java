@@ -12,12 +12,12 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FileInfo {
-    private Long fileNo;
-    private Long boardNo;
-    private String originalName;
-    private String saveName;
+    private Long file_no;
+    private Long board_no;
+    private String original_name;
+    private String save_name;
     private Long size;
-    private String deleteYn;
-    private LocalDateTime insertDate;
-    private LocalDateTime deleteDate;
+    private String delete_yn;
+    private LocalDateTime insert_time;
+    private LocalDateTime delete_time;
 }

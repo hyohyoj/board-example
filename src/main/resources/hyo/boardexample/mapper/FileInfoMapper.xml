@@ -1,28 +1,27 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="hyo.boardexample.mapper.FileMapper">
+<mapper namespace="hyo.boardexample.mapper.FileInfoMapper">
 
-    <insert id="insertFile" parameterType="hyo.boardexample.domain.FileInfo">
+    <insert id="insertFile" parameterType="list">
         INSERT INTO file_table(
              board_no
             ,original_name
             ,save_name
             ,size
             ,delete_yn
-            ,delete_date
+            ,delete_time
         ) VALUES
-<!--            <foreach collection="fileList" item="file" separator=","></foreach>-->
-             #{boardNo}
-            ,#{originalName}
-            ,#{saveName}
-            ,#{size}
+        <foreach collection="list" item="file" separator=",">
+        (
+             #{file.board_no}
+            ,#{file.original_name}
+            ,#{file.save_name}
+            ,#{file.size}
             ,'N'
             ,NULL
-        (
-        #{user_id},
-        #{user_pw}
         )
+        </foreach>
     </insert>
 
     <select id="selectFileDetail" parameterType="Long" resultType="hyo.boardexample.domain.FileInfo">
@@ -33,12 +32,12 @@
             ,save_name
             ,size
             ,delete_yn
-            ,insert_date
-            ,delete_date
+            ,insert_time
+            ,delete_time
         FROM
             file_table
         WHERE
-            file_no = #{fileNo}
+            file_no = #{file_no}
         AND
             delete_yn = 'N'
     </select>
@@ -49,10 +48,21 @@
              delete_yn = 'Y'
             ,delete_time = CURRENT_TIMESTAMP
         WHERE
-            board_no = #{boardNo}
+            board_no = #{board_no}
     </update>
 
-    <select id="selectFileList" parameterType="long" resultType="hyo.boardexample.domain.FileInfo">
+    <update id="undeleteFile" parameterType="list">
+        UPDATE file_table
+        SET
+            delete_yn = 'N'
+        WHERE
+            file_no IN
+            <foreach collection="list" item="item" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+    </update>
+
+    <select id="selectFileList" parameterType="Integer" resultType="hyo.boardexample.domain.FileInfo">
         SELECT
              file_no
             ,board_no
@@ -60,14 +70,14 @@
             ,save_name
             ,size
             ,delete_yn
-            ,insert_date
-            ,delete_date
+            ,insert_time
+            ,delete_time
         FROM
             file_table
         WHERE
             delete_yn = 'N'
         AND
-            board_no = #{boardNo}
+            board_no = #{board_no}
     </select>
 
     <select id="selectFileTotalCount" parameterType="long" resultType="int">
@@ -78,7 +88,7 @@
         WHERE
             delete_yn = 'N'
         AND
-            board_no = #{boardNo}
+            board_no = #{board_no}
     </select>
 
 </mapper>

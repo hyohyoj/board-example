@@ -39,8 +39,15 @@ public class FileUtils {
      * @return 업로드 파일 목록
      */
     public List<FileInfo> uploadFiles(MultipartFile[] files, Long boardNo) {
+
+        int count = 0;
         // 파일이 비어있을 경우 비어있는 리스트 반환
-        if(files[0].getSize() < 1) {
+        for (MultipartFile file : files) {
+            if(file.getSize() < 1) {
+                count++;
+            }
+        }
+        if(count == files.length) {
             return Collections.emptyList();
         }
 
@@ -65,12 +72,14 @@ public class FileUtils {
                 file.transferTo(target);
 
                 FileInfo fileInfo = new FileInfo();
-                fileInfo.setBoardNo(boardNo);
-                fileInfo.setOriginalName(file.getOriginalFilename());
-                fileInfo.setSaveName(saveName);
+                fileInfo.setBoard_no(boardNo);
+                fileInfo.setOriginal_name(file.getOriginalFilename());
+                fileInfo.setSave_name(saveName);
                 fileInfo.setSize(file.getSize());
 
-                fileList.add(fileInfo);
+                if(!file.getOriginalFilename().equals("")) {
+                    fileList.add(fileInfo);
+                }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             } catch (Exception e) {

@@ -19,14 +19,19 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .and()
                 .headers()
                 .xssProtection();    // XSS 처리
-//                .and()
-//                .contentSecurityPolicy("script-src 'unsafe-inline'");
         
         http
                 .logout()
                 .logoutSuccessUrl("/")  //로그아웃 시 리다이렉트 할 페이지
                 .invalidateHttpSession(true)    //세션 삭제
                 .deleteCookies("JSESSIONID");   //쿠키 삭제
+
+//        http
+//                .antMatcher("/admin/**")
+//                .logout()
+//                .logoutSuccessUrl("/admin")
+//                .invalidateHttpSession(true)
+//                .deleteCookies("JSESSIONID");
     }
 
     @Bean

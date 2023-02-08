@@ -1,5 +1,6 @@
 package hyo.boardexample.Controller;
 
+import com.nhncorp.lucy.security.xss.XssPreventer;
 import hyo.boardexample.Service.LoginService;
 import hyo.boardexample.common.SessionConstants;
 import hyo.boardexample.domain.Login;
@@ -13,6 +14,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -34,8 +36,11 @@ public class LoginController {
     //xss 필터링 테스트
     @PostMapping("/parameter")
     @ResponseBody
+    //@RequestParam String input
     public String strInput(@RequestParam String input){
-        return loginService.stringTest(input);
+        String convertMsg = XssPreventer.escape(input);
+
+        return loginService.stringTest(convertMsg);
     }
     //xss 필터링 json 형식 테스트
     @PostMapping("/dto")
@@ -44,9 +49,14 @@ public class LoginController {
         return loginService.dtoTest(login);
     }
 
-    @GetMapping("/login")
-    public String loginForm(Model model) {
+    @GetMapping(value = {"/login", "/admin/login"})
+    public String loginForm(Model model, HttpServletRequest request) {
+        String path = request.getRequestURI();
+        System.out.println(path);
+
         model.addAttribute("loginForm", new Login());
+        model.addAttribute("path", path);
+
         return "/login/loginForm";
     }
 
@@ -83,6 +93,7 @@ public class LoginController {
                         Model model) {
 
         Login loginMember = loginService.getUser(loginForm);
+        String path = request.getParameter("path");
 
         // 바인딩 에러가 일어났을 경우 loginForm으로 다시 던짐
         if(bindingResult.hasErrors()) {
@@ -94,6 +105,22 @@ public class LoginController {
             //bindingResult.reject("loginFail","아이디 또는 비밀번호가 맞지 않습니다.");
             model.addAttribute("loginForm", loginForm);
             return "/login/loginForm";
+        }
+
+        // 관리자 페이지 주소로 접근 시
+        if(path.equals("/admin/login")) {
+            if(loginMember.getAuth_code().equals("admin")) {
+                // 로그인 성공
+                HttpSession session = request.getSession(); // 세션이 있으면 있는 세션 반환, 없으면 신규 세션을 생성하여 반환
+                session.setAttribute(SessionConstants.LOGIN_MEMBER, loginMember);   // 세션에 로그인 회원 정보 보관
+
+                return "redirect:/admin";
+            } else {
+                model.addAttribute("loginForm", loginMember);
+                model.addAttribute("msg", "관리자 권한이 없습니다.");
+                model.addAttribute("path", path);
+                return "/login/loginForm";
+            }
         }
 
         // 로그인 성공
@@ -114,6 +141,17 @@ public class LoginController {
         // 해당 핸들러를 사용하면 logoutSuccessUrl(String)이 무시됨.
         new SecurityContextLogoutHandler().logout(request, response, SecurityContextHolder.getContext().getAuthentication());
         return "redirect:/";
+    }
+
+    @PostMapping("/admin/logout")
+    public String adminLogout(HttpServletRequest request, HttpServletResponse response) {
+        HttpSession session = request.getSession(false);
+
+        if(session != null) {
+            session.invalidate();
+        }
+
+        return "redirect:/admin";
     }
 
     @GetMapping("/signup")

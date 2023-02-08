@@ -22,6 +22,9 @@ public class LoginService {
     }
 
     public Login dtoTest(Login login) {
-        return new Login(login.getUser_id(), login.getUser_pw());
+        Login returnLogin = new Login();
+        returnLogin.setUser_id(login.getUser_id());
+        returnLogin.setUser_pw(login.getUser_pw());
+        return returnLogin;
     }
 }

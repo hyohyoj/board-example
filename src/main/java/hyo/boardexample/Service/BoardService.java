@@ -1,6 +1,7 @@
 package hyo.boardexample.Service;
 
 import hyo.boardexample.domain.Board;
+import hyo.boardexample.domain.BoardType;
 import hyo.boardexample.domain.FileInfo;
 import hyo.boardexample.mapper.BoardMapper;
 import hyo.boardexample.mapper.FileInfoMapper;
@@ -27,6 +28,8 @@ public class BoardService {
     public List<Board> boardAnswerList(Integer num) {
         return boardMapper.getAnswerList(num);
     }
+
+    public List<BoardType> getBoardTypeList() { return boardMapper.getBoardTypeList(); }
 
     public Board boardOne(Integer num) {
         return boardMapper.getOne(num);

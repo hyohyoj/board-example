@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Home</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+
+<script th:inline="javascript">
+    $(document).ready(function () {
+
+        function getBoardTypeList() {
+            $.ajax({
+                type : "GET",
+                url : "/board/getBoardType",
+                dataType:"text",
+                data : { 'auth' : 'admin' },
+                success : function(data){
+                      // 초기화
+                      $("#dataTableBody").empty();
+
+                      $("#dataTableBody").html(data);
+                }
+            });
+        }
+
+        getBoardTypeList();
+    })
+</script>
+
+<body>
+<h1 th:text="|${session.loginMember.user_id} 관리자님 안녕하세요!|">로그인 사용자 이름</h1>
+<form th:action="@{/admin/logout}" method="post">
+    <button onclick="location.href='items.html'" type="submit">
+        로그아웃
+    </button>
+</form>
+<form th:action="@{/board/insertBoardType}" method="get">
+    <button onclick="location.href='items.html'" type="submit">
+        게시판 생성
+    </button>
+</form>
+<hr>
+<table style="width:500px; text-align:center;">
+    <thead>
+    <tr>
+        <th>번호</th>
+        <th>이름</th>
+        <th>날짜</th>
+        <th>생성자</th>
+        <th></th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody id="dataTableBody">
+    </tbody>
+</table>
+
+</body>
+</html>

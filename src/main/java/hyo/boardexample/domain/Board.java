@@ -29,4 +29,6 @@ public class Board {
     private String searchContent;
     private String changeYn;
     private List<Long> fileNumList;
+    private Long type_no;
+    private String type_name;
 }

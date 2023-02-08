@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ko">
+<body>
+
+<!-- 사용자 페이지 -->
+<th:block th:if="${#strings.isEmpty(auth)}">
+<ul id="boardTypeUl">
+<li>
+    <a href="#" onclick="typeChange()">전체게시판</a>
+</li>
+<li th:each="row, status : ${typeList}">
+    <a href="#" th:id="${row.type_name}" th:onclick="|typeChange(${row.type_no})|">
+        [[ ${row.type_name} ]]
+    </a>
+</li>
+</ul>
+</th:block>
+
+<!-- 관리자 페이지 -->
+<th:block th:if="${not #strings.isEmpty(auth)}">
+    <tr style='cursor:pointer;' th:each="type : ${typeList}">
+        <td th:onclick="|location.href='/admin/boardType/detail?num=${type.type_no}'|" th:text="${type.type_no}"></td>
+        <td th:onclick="|location.href='/admin/boardType/detail?num=${type.type_no}'|" th:utext="${type.type_name}"></td>
+        <td th:onclick="|location.href='/admin/boardType/detail?num=${type.type_no}'|" th:text="${#strings.arraySplit(type.insert_date, 'T')[0] + ' ' + #strings.arraySplit(type.insert_date, 'T')[1]}"></td>
+        <td th:onclick="|location.href='/admin/boardType/detail?num=${type.type_no}'|" th:text="${type.insert_user}"></td>
+        <td><button th:onclick="|modifyBoardType(${type.type_no})|">수정</button></td>
+        <td><button th:onclick="|deleteBoardType(${type.type_no})|">비활성화</button></td>
+    </tr>
+    <th:block th:if="${#lists.size(typeList) < 1}">
+        <tr>
+            <td colspan="4" style="background-color: lightgrey;">생성한 게시판이 없습니다.</td>
+        </tr>
+    </th:block>
+</th:block>
+</body>
+</html>

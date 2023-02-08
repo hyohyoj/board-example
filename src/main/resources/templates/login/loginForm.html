@@ -64,12 +64,13 @@
 
 <body>
 <h1>로그인</h1>
-<form action="/login" th:object="${loginForm}" method="post">
+<form th:action="@{/login}" th:object="${loginForm}" method="post">
 
 <!--    <div th:if="${#fields.hasGlobalErrors()}">-->
 <!--        <p class="field-error" th:each="err : ${#fields.globalErrors()}" th:text="${err}">전체 오류 메시지</p>-->
 <!--    </div>-->
-    <p id="errorMsg" style="color:red;"></p>
+    <p id="errorMsg" style="color:red;" th:text="${msg}"></p>
+    <input type="hidden" name="path" th:value="${path}">
 
     <div>
         <label for="user_id">로그인 ID</label>

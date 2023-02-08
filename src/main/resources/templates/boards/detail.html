@@ -19,6 +19,26 @@
       border-bottom-color: #e2e2e2;
       border-radius: .25em;
     }
+
+    .wrap-loading{ /*화면 전체를 어둡게 합니다.*/
+        position: fixed;
+        left:0;
+        right:0;
+        top:0;
+        bottom:0;
+    }
+
+    .wrap-loading div{ /*로딩 이미지*/
+        position: fixed;
+        top:50%;
+        left:50%;
+        margin-left: -21px;
+        margin-top: -21px;
+    }
+
+    .display-none{ /*감추기*/
+        display:none;
+    }
 </style>
 <script th:inline="javascript">
   $(document).ready(function () {
@@ -50,12 +70,6 @@
         $("#modify").text("완료");
       }
       else if(status == "완료") {
-<!--        $("#cancel").hide();-->
-<!--        $("#content").attr("readonly", true);-->
-<!--        $("#answerInsert").show();-->
-<!--        $("#fileDiv").show();-->
-<!--        $("#fileModifyDiv").hide();-->
-<!--        $("#modify").text("수정");-->
 
         let file = $("#boardFileInsertForm")[0];
         let formData = new FormData(file);
@@ -95,8 +109,14 @@
                         alert('게시글 및 파일이 수정되었습니다.');
                         location.reload();
                       }
-                },
-                error : function(request,status,error) {
+                }
+                ,beforeSend : function() {
+                    $('.wrap-loading').removeClass('display-none');
+                }
+                ,complete : function() {
+                    $('.wrap-loading').addClass('display-none');
+                }
+                ,error : function(request,status,error) {
                     if(status == '500') {
                         alert('에러가 발생했습니다.');
                     } else {
@@ -140,9 +160,6 @@
         $("#answerInsert").text("완료");
       }
       else if(status == "완료") {
-<!--        $("#cancel").hide();-->
-<!--        $("#modify").show();-->
-<!--        $("#answerContent").hide();-->
 
         $.ajax({
                 type : "POST",
@@ -230,9 +247,32 @@
 
         console.log("filename : " + filename);
     }
+
+<!--    function downloadFile(fileNo) {-->
+<!--        $.ajax({-->
+<!--                type : "GET",-->
+<!--                url : "/board/download?fileNo=" + fileNo,-->
+<!--                success : function(data){-->
+<!--                    alert('파일 다운로드가 완료되었습니다.');-->
+<!--                }-->
+<!--                ,beforeSend : function() {-->
+<!--                    $('.wrap-loading').removeClass('display-none');-->
+<!--                }-->
+<!--                ,complete : function() {-->
+<!--                    $('.wrap-loading').addClass('display-none');-->
+<!--                }-->
+<!--                ,error : function(request,status,error) {-->
+<!--                    alert('다운로드 도중 에러가 발생했습니다.');-->
+<!--                }-->
+<!--        });-->
+<!--    }-->
+
 </script>
 
 <body>
+
+<input type="hidden" id="sessionId" th:value="${session.loginMember.user_id}" />
+
 <table style="text-align:center;">
   <thead>
   <tr>
@@ -259,6 +299,9 @@
         <a  th:href="@{/board/download( fileNo=${row.file_no} )}">
             [[ ${row.original_name} ]]
         </a>
+<!--        <a href="#" th:onclick="|downloadFile(${row.file_no})|">-->
+<!--            [[ ${row.original_name} ]]-->
+<!--        </a>-->
         <br>
     </div>
 </div>
@@ -300,8 +343,6 @@
     </div>
 </form>
 
-<input type="hidden" id="sessionId" th:value="${session.loginMember.user_id}" />
-
 <br>
 <button id="modify">수정</button>
 <button style="display: none;" id="cancel">취소</button>
@@ -316,9 +357,13 @@
     &nbsp
     <span th:text="${'작성날짜 : ' + #strings.arraySplit(answer.insert_date, 'T')[0] + ' ' + #strings.arraySplit(answer.insert_date, 'T')[1]}">작성날짜</span>
     <br>
-    <textarea style='width: 397px; height: 120px; background-color:lightgray; resize: none;' readonly th:text="${answer.board_content}"></textarea>
+    <textarea style='width: 397px; height: 120px; background-color:lightgray; resize: none;' readonly th:utext="${answer.board_content}"></textarea>
     <br>
   </div>
+</div>
+
+<div class="wrap-loading display-none">
+    <div><img style="width: 50px;" src="../images/loading.gif" /></div>
 </div>
 
 </body>

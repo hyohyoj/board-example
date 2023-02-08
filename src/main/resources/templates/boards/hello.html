@@ -38,60 +38,91 @@ ul li.on {
 ul li.on a {
     color: #fff;
 }
+
+.wrap-loading{ /*화면 전체를 어둡게 합니다.*/
+    position: fixed;
+    left:0;
+    right:0;
+    top:0;
+    bottom:0;
+}
+
+.wrap-loading div{ /*로딩 이미지*/
+    position: fixed;
+    top:50%;
+    left:50%;
+    margin-left: -21px;
+    margin-top: -21px;
+}
+
+.display-none{ /*감추기*/
+    display:none;
+}
 </style>
 
 <script th:inline="javascript">
-    $(document).ready(function () {
 
-        let globalCurrentPage = $("#selectedPage").val();
-        let keyword = $("#searchKeyword").val();
-        let searchContent = $("#searchInput").val();
-        let sessionId = $("#sessionId").val();
-        let params;
-        let totalCount;
+    let globalCurrentPage;
+    let keyword;
+    let searchContent;
+    let sessionId;
+    let params;
+    let totalCount;
+    let boardType;
 
-        function selectList(selectedPage) {
+    function selectList(selectedPage, boardType) {
 
-            if(typeof selectedPage == 'undefined' || selectedPage == '' ) selectedPage = 1;
+        if(typeof selectedPage == 'undefined' || selectedPage == '' ) selectedPage = 1;
+        if(typeof boardType == 'undefined' || boardType == '' ) boardType = null;
 
-            // 검색어 없을 경우 기본 리스트 호출
-            if(searchContent == '') {
-                params = {
-                    'page' : selectedPage
-                }
-            } else {
-                params = {
-                    'page' : selectedPage,
-                    'keyword' : keyword,
-                    'searchContent' : searchContent
-                }
+        console.log("boardType : " + boardType);
+
+        // 검색어 없을 경우 기본 리스트 호출
+        if(searchContent == '') {
+            params = {
+                'page' : selectedPage,
+                'type_no' : boardType
             }
+        } else {
+            params = {
+                'page' : selectedPage,
+                'keyword' : keyword,
+                'searchContent' : searchContent,
+                'type_no' : boardType
+            }
+        }
 
-            $.ajax({
-                type : "GET",
-                url : "/board/getCount",
-                dataType:"text",
-                data : params,
-                success : function(data){
-                    console.log("totalCount : " + data);
-                    totalCount = data;
+        $.ajax({
+            type : "GET",
+            url : "/board/getCount",
+            dataType:"text",
+            data : params,
+            success : function(data){
+                console.log("totalCount : " + data);
+                totalCount = data;
 
-                    $.ajax({
-                        type : "GET",
-                        url : "/board/selectList",
-                        dataType:"text",
-                        async:false,
-                        data : params,
-                        success : function(data){
-                              // 테이블 초기화
-                              $("#dataTableBody").empty();
+                $.ajax({
+                    type : "GET",
+                    url : "/board/selectList",
+                    dataType:"text",
+                    async:false,
+                    data : params,
+                    success : function(data){
+                          // 테이블 초기화
+                          $("#dataTableBody").empty();
 
-                              $("#dataTableBody").html(data);
-                              paging(totalCount, selectedPage);
-                        }
-                    });
-                }
-            });
+                          $("#dataTableBody").html(data);
+                          paging(totalCount, selectedPage, boardType);
+                    }
+                });
+            }
+            ,beforeSend : function() {
+                $('.wrap-loading').removeClass('display-none');
+            }
+            ,complete : function() {
+                $('.wrap-loading').addClass('display-none');
+            }
+        });
 
 <!--            $.ajax({-->
 <!--                type : "GET",-->
@@ -118,9 +149,9 @@ ul li.on a {
 <!--                     paging(totalCount, selectedPage);-->
 <!--                }-->
 <!--            });-->
-        }
+    }
 
-        function paging(totalData, currentPage) {
+    function paging(totalData, currentPage, boardType) {
           console.log("currentPage : " + currentPage);
 
           let pageCount = 10;
@@ -179,30 +210,11 @@ ul li.on a {
             //전역변수에 선택한 페이지 번호를 담는다...
             $("#selectedPage").val(selectedPage);
             //페이징 표시 재호출
-            paging(totalData, selectedPage);
+            paging(totalData, selectedPage, boardType);
             //글 목록 표시 재호출
-            selectList(selectedPage);
+            selectList(selectedPage, boardType);
           });
-        }
-
-        $("#searchKeyword").on("change", function() {
-            keyword = $(this).val();
-            console.log(keyword);
-        })
-        $("#searchBtn").on("click", function() {
-            searchContent = $("#searchInput").val();
-            selectList(1);
-        })
-        $("#searchInput").on("keyup",function(key){
-            if(key.keyCode==13) {
-                searchContent = $("#searchInput").val();
-                selectList(1);
-            }
-        });
-
-        selectList(globalCurrentPage);
-
-    })
+    }
 
     function deleteBoard(boardNum) {
         console.log(boardNum);
@@ -224,9 +236,65 @@ ul li.on a {
                         alert('삭제에 문제가 생겼습니다.');
                     }
                 }
+                ,beforeSend : function() {
+                    $('.wrap-loading').removeClass('display-none');
+                }
+                ,complete : function() {
+                    $('.wrap-loading').addClass('display-none');
+                }
             });
         }
     }
+
+    function typeChange(type) {
+        console.log("type : " + type);
+        $("#boardType").val(type);
+        selectList(1, type);
+    }
+
+    $(document).ready(function () {
+
+        globalCurrentPage = $("#selectedPage").val();
+        keyword = $("#searchKeyword").val();
+        searchContent = $("#searchInput").val();
+        sessionId = $("#sessionId").val();
+
+        function getBoardTypeList() {
+            $.ajax({
+                type : "GET",
+                url : "/board/getBoardType",
+                dataType:"text",
+                data : params,
+                success : function(data){
+                      // 초기화
+                      $("#boardTypeList").empty();
+
+                      $("#boardTypeList").html(data);
+                }
+            });
+        }
+
+        $("#searchKeyword").on("change", function() {
+            keyword = $(this).val();
+            console.log(keyword);
+        })
+        $("#searchBtn").on("click", function() {
+            searchContent = $("#searchInput").val();
+            boardType = $("#boardType").val();
+            selectList(1, boardType);
+        })
+        $("#searchInput").on("keyup",function(key){
+            if(key.keyCode==13) {
+                searchContent = $("#searchInput").val();
+                boardType = $("#boardType").val();
+                selectList(1, boardType);
+            }
+        });
+
+        selectList(globalCurrentPage);
+        getBoardTypeList();
+
+    })
 
 </script>
 
@@ -242,6 +310,11 @@ ul li.on a {
         게시글 등록
     </button>
 </form>
+<hr>
+
+<div id="boardTypeList">
+</div>
+
 <hr>
 <div style="text-align: center; float: left;">
     <select id="searchKeyword">
@@ -272,10 +345,15 @@ ul li.on a {
 </table>
 
 <input type="hidden" id="selectedPage" />
+<input type="hidden" id="boardType" />
 <input type="hidden" id="sessionId" th:value="${session.loginMember.user_id}" />
 
 <ul id="pagingul">
 </ul>
+
+<div class="wrap-loading display-none">
+    <div><img style="width: 50px;" src="./images/loading.gif" /></div>
+</div>
 
 </body>
 </html>

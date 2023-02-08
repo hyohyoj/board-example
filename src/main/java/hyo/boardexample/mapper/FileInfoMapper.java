@@ -13,6 +13,8 @@ public interface FileInfoMapper {
 
     int deleteFile(Long boardNo);
 
+    int completeDeleteFile(Long boardNo);
+
     List<FileInfo> selectFileList(Integer boardNo);
 
     int selectFileTotalCount(Long boardNo);

@@ -22,8 +22,14 @@ public class FileInfoService {
         return fileInfoMapper.selectFileList(board_no);
     }
 
+    public FileInfo selectFileDetail(Long file_no) { return fileInfoMapper.selectFileDetail(file_no); }
+
     public int deleteFile(Long board_no) {
         return fileInfoMapper.deleteFile(board_no);
+    }
+
+    public int completeDeleteFile(Long board_no) {
+        return fileInfoMapper.completeDeleteFile(board_no);
     }
 
     public int undeleteFile(List<Long> file_no) {

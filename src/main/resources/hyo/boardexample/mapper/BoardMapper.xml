@@ -23,9 +23,19 @@
 
     <select id="boardCount" parameterType="hyo.boardexample.domain.Board" resultType="int">
         SELECT count(board_no) AS cnt FROM board
-        <if test="searchContent != null">
-            <include refid="search"></include>
-        </if>
+        <choose>
+            <when test="searchContent != null">
+                <include refid="search"></include>
+                <if test="type_no != null">
+                    AND type_no = #{type_no}
+                </if>
+            </when>
+            <otherwise>
+                <if test="type_no != null">
+                    WHERE type_no = #{type_no}
+                </if>
+            </otherwise>
+        </choose>
     </select>
 
     <select id="getList" parameterType="hyo.boardexample.domain.Board" resultType="hyo.boardexample.domain.Board">
@@ -37,9 +47,19 @@
             ,insert_date
             ,target
         FROM board
-        <if test="searchContent != null">
-            <include refid="search"></include>
-        </if>
+        <choose>
+            <when test="searchContent != null">
+                <include refid="search"></include>
+                <if test="type_no != null">
+                    AND type_no = #{type_no}
+                </if>
+            </when>
+            <otherwise>
+                <if test="type_no != null">
+                    WHERE type_no = #{type_no}
+                </if>
+            </otherwise>
+        </choose>
         <choose>
             <when test="page != null">
                 LIMIT #{page}, 10
@@ -57,6 +77,19 @@
             ,insert_date
         FROM board
         WHERE target = #{num}
+    </select>
+
+    <select id="getBoardTypeList" resultType="hyo.boardexample.domain.BoardType">
+        SELECT
+             type_no
+            ,type_name
+            ,insert_user
+            ,insert_date
+            ,delete_yn
+        FROM
+            board_type
+        WHERE
+            delete_yn = 'N'
     </select>
 
     <select id="getOne" parameterType="Integer" resultType="hyo.boardexample.domain.Board">
@@ -99,12 +132,12 @@
 
     <delete id="delete" parameterType="hyo.boardexample.domain.Board">
         DELETE FROM board
-        WHERE board_no in (#{board_no})
+        WHERE board_no = #{board_no}
     </delete>
 
     <delete id="deleteAnswer" parameterType="hyo.boardexample.domain.Board">
         DELETE FROM board
-        WHERE target in (#{board_no})
+        WHERE target =  #{board_no}
     </delete>
 
 </mapper>

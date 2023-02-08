@@ -77,7 +77,7 @@ public class FileUtils {
                 fileInfo.setSave_name(saveName);
                 fileInfo.setSize(file.getSize());
 
-                if(!file.getOriginalFilename().equals("")) {
+                if(!file.getOriginalFilename().equals("")) {    // 비어있는 파일명 제외
                     fileList.add(fileInfo);
                 }
             } catch (IOException e) {
@@ -90,4 +90,13 @@ public class FileUtils {
         return fileList;
     }
 
+    public void deleteFiles() {
+        //현재 게시판에 존재하는 파일객체를 만듬
+        File file = new File(uploadPath + "\\" + "저장된 파일 이름");
+
+        if(file.exists()) { // 파일이 존재하면
+            file.delete(); // 파일 삭제
+        }
+    }
+    
 }

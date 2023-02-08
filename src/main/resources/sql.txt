@@ -4,6 +4,7 @@ create table user_info (
 	user_id varchar(50) not null primary key,
     user_pw varchar(100)
 );
+alter table user_info add column auth_code varchar(50) default null;
 
 create table board (
 	board_no int not null auto_increment primary key,
@@ -12,6 +13,7 @@ create table board (
     board_content varchar(150),
     insert_date datetime default current_timestamp
 );
+alter table board add column target int default null;
 
 create table file_table (
 	file_no int not null auto_increment primary key,
@@ -25,16 +27,29 @@ create table file_table (
     foreign key (board_no) references board(board_no)
 );
 
+
+update user_info set auth_code = 'admin' where user_id = 'admin';
+
+select * from user_info;
 select * from file_table;
+select * from board order by board_no desc;
+
+select * from board where board_title like concat('%','script','%');
+
+delete from file_table where board_no in (1099491, 1099528);
+delete from board where board_no in (1099532);
+
+
+drop table file_table;
+
+insert into file_table(board_no, original_name, save_name, size, delete_yn, delete_time)
+values(1, 'test', 'test', 10, 'N', current_timestamp);
 
 desc file_table;
 
 select *
 from information_schema.TABLE_CONSTRAINTS
 where TABLE_SCHEMA = 'board_db';
-
-alter table board add column target int default null;
-
 
 select count(*) from board;
 select * from board order by board_no desc;
@@ -43,15 +58,6 @@ select * from board where user_id = 'test' limit 0, 10;
 show processlist;
 kill 538;
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `insertLoop`()
-BEGIN
-    DECLARE i INT DEFAULT 1;
-    WHILE i <= 500000 DO
-        INSERT INTO board_db.board(user_id, board_title, board_content)
-				VALUES ('hyo', concat('test', i), '테스트입니다');
-        SET i = i + 1;
-    END WHILE;
-END
 CALL insertLoop;
 
 select * from user_info;

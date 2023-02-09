@@ -29,8 +29,6 @@ public class BoardService {
         return boardMapper.getAnswerList(num);
     }
 
-    public List<BoardType> getBoardTypeList() { return boardMapper.getBoardTypeList(); }
-
     public Board boardOne(Integer num) {
         return boardMapper.getOne(num);
     }
@@ -49,5 +47,9 @@ public class BoardService {
 
     public int deleteAnswer(Board board) {
         return boardMapper.deleteAnswer(board);
+    }
+
+    public int modifyBoardYn(Board board) {
+        return boardMapper.modifyBoardYn(board);
     }
 }

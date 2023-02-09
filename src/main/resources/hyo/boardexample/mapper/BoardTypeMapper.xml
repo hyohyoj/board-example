@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="hyo.boardexample.mapper.BoardTypeMapper">
+
+    <select id="getBoardTypeList" parameterType="String" resultType="hyo.boardexample.domain.BoardType">
+        SELECT
+             type_no
+            ,type_name
+            ,insert_user
+            ,insert_date
+            ,delete_yn
+            ,kind
+        FROM
+            board_type
+        <if test="auth != 'admin'">
+        WHERE
+            delete_yn = 'N'
+        </if>
+    </select>
+
+    <select id="getBoardType" parameterType="Long" resultType="hyo.boardexample.domain.BoardType">
+        SELECT
+             type_no
+            ,type_name
+            ,insert_user
+            ,insert_date
+            ,delete_yn
+            ,kind
+
+        FROM
+            board_type
+        WHERE
+            type_no = #{type_no}
+    </select>
+
+    <update id="modifyBoardType" parameterType="hyo.boardexample.domain.BoardType">
+        UPDATE
+            board_type
+        SET
+             type_name = #{type_name}
+            ,delete_yn = #{delete_yn}
+            ,kind = #{kind}
+        WHERE
+            type_no = #{type_no}
+    </update>
+
+    <insert id="insertBoardType" parameterType="hyo.boardexample.domain.BoardType">
+        INSERT INTO board_type(
+             type_name
+            ,insert_user
+            ,kind
+        )
+        VALUES(
+             #{type_name}
+            ,#{insert_user}
+            ,#{kind}
+        )
+    </insert>
+
+</mapper>

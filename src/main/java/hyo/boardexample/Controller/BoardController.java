@@ -2,6 +2,7 @@ package hyo.boardexample.Controller;
 
 import com.nhncorp.lucy.security.xss.XssPreventer;
 import hyo.boardexample.Service.BoardService;
+import hyo.boardexample.Service.BoardTypeService;
 import hyo.boardexample.Service.FileInfoService;
 import hyo.boardexample.common.FileUtils;
 import hyo.boardexample.common.SessionConstants;
@@ -35,6 +36,7 @@ import java.util.List;
 public class BoardController {
 
     private final BoardService boardService;
+    private final BoardTypeService boardTypeService;
     private final FileInfoService fileInfoService;
     private final FileUtils fileUtils;
 
@@ -80,9 +82,10 @@ public class BoardController {
         ModelAndView mv = new ModelAndView();
 
         boardModel.setPage((boardModel.getPage()-1) * 10);
-        if(boardModel.getType_no() != null) {
-            System.out.println(boardModel.getType_no());
-        }
+
+        // 유저 아이디 보내서 권한 테이블 조회
+        // 해당 권한을 userAuthList 에 넣음
+
 
         try{
             boardList = boardService.boardList(boardModel);
@@ -105,7 +108,7 @@ public class BoardController {
         ModelAndView mv = new ModelAndView();
 
         try {
-            boardTypeList = boardService.getBoardTypeList();
+            boardTypeList = boardTypeService.getBoardTypeList(auth);
 
             mv.setViewName("/boards/setBoardTypeList");
             mv.addObject("typeList", boardTypeList);
@@ -141,7 +144,10 @@ public class BoardController {
 
     @GetMapping("/insertForm")
     public String insertForm(Model model) {
+        List<BoardType> boardTypeList = boardTypeService.getBoardTypeList("user");
+
         model.addAttribute("boardForm", new Board());
+        model.addAttribute("typeList", boardTypeList);
         return "/boards/insertForm";
     }
 
@@ -151,12 +157,6 @@ public class BoardController {
             @RequestPart(value="files", required = false) MultipartFile[] files,
             @RequestPart(value="board") Board board) throws IOException
     {
-        for (MultipartFile file: files) {
-            System.out.println("file name : " + file.getOriginalFilename());
-        }
-        System.out.println("board info : " + board.getUser_id() + ", " + board.getBoard_title() + ", " + board.getBoard_content());
-        System.out.println("convert board info : " + board.getUser_id() + ", " + XssPreventer.escape(board.getBoard_title()) + ", " + XssPreventer.escape(board.getBoard_content()));
-
         // xss escape 처리 (multipartResolver 처리 한 form-data는 lucy-xss-filter가 먹히지 않아서 따로 처리해줘야 함)
         board.setBoard_title(XssPreventer.escape(board.getBoard_title()));
         board.setBoard_content(XssPreventer.escape(board.getBoard_content()));
@@ -166,8 +166,6 @@ public class BoardController {
         int success = boardService.insert(board);
 
         if(success >= 1) {
-            result = "게시글 업로드 성공";
-
             // insert한 게시글의 board_no 받아옴
             Long boardNo = board.getBoard_no();
             System.out.println("boardNo : " +  boardNo);
@@ -177,7 +175,7 @@ public class BoardController {
             if(!CollectionUtils.isEmpty(fileList)) {
                 success = fileInfoService.insertFiles(fileList);
                 if(success >= 1) {
-                    result = "파일 업로드 성공";
+                    result = "성공";
                 }
             }
         }
@@ -187,16 +185,7 @@ public class BoardController {
 
     @PostMapping("/insertAnswer")
     @ResponseBody
-    public int insertAnswer(
-            @RequestParam(value="user_id", defaultValue = "") String userId,
-            @RequestParam(value="board_content", defaultValue = "") String boardContent,
-            @RequestParam(value="target") Long target
-    ) {
-        Board board = new Board();
-        board.setUser_id(userId);
-        board.setBoard_content(boardContent);
-        board.setTarget(target);
-
+    public int insertAnswer(@ModelAttribute Board board) {
         return boardService.insert(board);
     }
 
@@ -207,11 +196,6 @@ public class BoardController {
             @RequestPart(value="board") Board board) throws IOException, MaxUploadSizeExceededException
     {
         List<Long> fileNumList = board.getFileNumList();
-
-        for (MultipartFile file: files) {
-            System.out.println("file name : " + file.getOriginalFilename());
-        }
-        System.out.println(board.getBoard_no());
 
         int result = 0;
 
@@ -299,10 +283,26 @@ public class BoardController {
     }
 
     @GetMapping("/detail")
-    public String detail(@RequestParam(value="num", defaultValue = "1") Integer num, Model model) {
+    public String detail(
+            @RequestParam(value="num") Integer num,
+            @SessionAttribute(name = SessionConstants.LOGIN_MEMBER, required = false) Login loginMember,
+            Model model)
+    {
+        String boardUser = boardService.boardOne(num).getUser_id();
+        String sessionId = loginMember.getUser_id();
+        String sessionAuth = loginMember.getAuth_code();
+        boolean validation = false;
+
+        // 관리자 권한이거나, 게시글 작성자인 경우 권한 부여
+        if(sessionAuth.equals("admin") || sessionId.equals(boardUser)) {
+            validation = true;
+        }
+
         model.addAttribute("boardForm", boardService.boardOne(num));
         model.addAttribute("answerList", boardService.boardAnswerList(num));
         model.addAttribute("fileList", fileInfoService.selectFileList(num));
+        model.addAttribute("validation", validation);
+
         return "/boards/detail";
     }
 }

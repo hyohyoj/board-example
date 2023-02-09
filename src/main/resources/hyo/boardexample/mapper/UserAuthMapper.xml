@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="hyo.boardexample.mapper.UserAuthMapper">
+
+    <select id="getUserAuthList" parameterType="String" resultType="hyo.boardexample.domain.UserAuth">
+        SELECT
+             auth_no
+            ,user_id
+            ,auth_code
+            ,type_no
+            ,delete_yn
+            ,insert_user
+            ,insert_date
+        FROM
+            auth_table
+        WHERE
+            user_id = #{user_id}
+        AND
+            delete_yn = 'N'
+    </select>
+
+    <insert id="insertUserAuth" parameterType="hyo.boardexample.domain.UserAuth">
+        INSERT INTO auth_table(
+             user_id
+            ,auth_code
+            ,type_no
+            ,insert_user
+        )
+        VALUES(
+             #{user_id}
+            ,#{auth_code}
+            ,#{type_no}
+            ,#{insert_user}
+        )
+    </insert>
+
+    <update id="deleteUserAuth" parameterType="hyo.boardexample.domain.UserAuth">
+        UPDATE auth_table
+        SET delete_yn = #{delete_yn}
+        WHERE auth_no = #{auth_no}
+    </update>
+
+    <update id="updateUserAuth" parameterType="hyo.boardexample.domain.UserAuth">
+        UPDATE auth_table
+        SET
+             auth_code = #{auth_code}
+            ,type_no = #{type_no}
+            ,insert_user = #{insert_user}
+            ,insert_date = CURRENT_TIMESTAMP
+        WHERE
+            auth_no = #{auth_no}
+        AND
+            user_id = #{user_id}
+    </update>
+
+</mapper>

@@ -66,9 +66,6 @@
 <h1>로그인</h1>
 <form th:action="@{/login}" th:object="${loginForm}" method="post">
 
-<!--    <div th:if="${#fields.hasGlobalErrors()}">-->
-<!--        <p class="field-error" th:each="err : ${#fields.globalErrors()}" th:text="${err}">전체 오류 메시지</p>-->
-<!--    </div>-->
     <p id="errorMsg" style="color:red;" th:text="${msg}"></p>
     <input type="hidden" name="path" th:value="${path}">
 
@@ -76,13 +73,11 @@
         <label for="user_id">로그인 ID</label>
         <input type="text" id="user_id" th:field="*{user_id}" class="form-control"
                th:errorclass="field-error">
-<!--        <div class="field-error" th:errors="*{user_id}" />-->
     </div>
     <div>
         <label for="user_pw">비밀번호</label>
         <input type="password" id="user_pw" th:field="*{user_pw}" class="form-control"
                th:errorclass="field-error">
-<!--        <div class="field-error" th:errors="*{user_pw}" />-->
     </div>
 
     <hr class="my-4">
@@ -95,9 +90,17 @@
         <button id="signUp" type="button" th:onclick="|location.href='@{/signup}'|">회원가입</button>
     </div>
     <div class="col">
-        <button onclick="location.href='items.html'"
-                th:onclick="|location.href='@{/}'|"
-                type="button">취소</button>
+        <th:block th:if="${#strings.equals(path,'/admin/login')}">
+            <button onclick="location.href='items.html'"
+                    th:onclick="|location.href='@{/admin}'|"
+                    type="button">취소</button>
+        </th:block>
+        <th:block th:unless="${#strings.equals(path,'/admin/login')}">
+            <button onclick="location.href='items.html'"
+                    th:onclick="|location.href='@{/}'|"
+                    type="button">취소</button>
+        </th:block>
+
     </div>
 </div>
 </body>

@@ -49,8 +49,8 @@
     let sessionId = $("#sessionId").val();
     let fileHtml = $("#fileModifyDiv").html();
 
-    //작성자인 경우에만 수정 가능
-    if(sessionId != boardUser) {
+    // 관리자 권한 및 작성자인 경우에만 수정 가능
+    if(!/*[[ ${validation} ]]*/) {
       $("#modify").hide();
     }
 

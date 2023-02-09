@@ -6,15 +6,15 @@
     <sql id="search">
         <choose>
             <when test="keyword == 'user_id'.toString()">
-                WHERE user_id LIKE CONCAT('%',#{searchContent},'%')
+                AND user_id LIKE CONCAT('%',#{searchContent},'%')
                 AND target IS NULL
             </when>
             <when test="keyword == 'board_title'.toString()">
-                WHERE board_title LIKE CONCAT('%',#{searchContent},'%')
+                AND board_title LIKE CONCAT('%',#{searchContent},'%')
                 AND target IS NULL
             </when>
             <otherwise>
-                WHERE board_content LIKE CONCAT('%',#{searchContent},'%')
+                AND board_content LIKE CONCAT('%',#{searchContent},'%')
                 AND target IS NULL
             </otherwise>
         </choose>
@@ -23,19 +23,13 @@
 
     <select id="boardCount" parameterType="hyo.boardexample.domain.Board" resultType="int">
         SELECT count(board_no) AS cnt FROM board
-        <choose>
-            <when test="searchContent != null">
-                <include refid="search"></include>
-                <if test="type_no != null">
-                    AND type_no = #{type_no}
-                </if>
-            </when>
-            <otherwise>
-                <if test="type_no != null">
-                    WHERE type_no = #{type_no}
-                </if>
-            </otherwise>
-        </choose>
+        WHERE delete_yn = 'N'
+        <if test="searchContent != null">
+            <include refid="search"></include>
+        </if>
+        <if test="type_no != null">
+            AND type_no = #{type_no}
+        </if>
     </select>
 
     <select id="getList" parameterType="hyo.boardexample.domain.Board" resultType="hyo.boardexample.domain.Board">
@@ -47,19 +41,13 @@
             ,insert_date
             ,target
         FROM board
-        <choose>
-            <when test="searchContent != null">
-                <include refid="search"></include>
-                <if test="type_no != null">
-                    AND type_no = #{type_no}
-                </if>
-            </when>
-            <otherwise>
-                <if test="type_no != null">
-                    WHERE type_no = #{type_no}
-                </if>
-            </otherwise>
-        </choose>
+        WHERE delete_yn = 'N'
+        <if test="searchContent != null">
+            <include refid="search"></include>
+        </if>
+        <if test="type_no != null">
+            AND type_no = #{type_no}
+        </if>
         <choose>
             <when test="page != null">
                 LIMIT #{page}, 10
@@ -79,19 +67,6 @@
         WHERE target = #{num}
     </select>
 
-    <select id="getBoardTypeList" resultType="hyo.boardexample.domain.BoardType">
-        SELECT
-             type_no
-            ,type_name
-            ,insert_user
-            ,insert_date
-            ,delete_yn
-        FROM
-            board_type
-        WHERE
-            delete_yn = 'N'
-    </select>
-
     <select id="getOne" parameterType="Integer" resultType="hyo.boardexample.domain.Board">
         SELECT
              board_no
@@ -109,22 +84,41 @@
         WHERE board_no = #{board_no}
     </update>
 
+    <update id="modifyBoardYn" parameterType="hyo.boardexample.domain.Board">
+        UPDATE
+            board
+        SET
+            delete_yn = #{delete_yn}
+        WHERE
+            type_no = #{type_no}
+    </update>
+
     <insert id="insert" parameterType="hyo.boardexample.domain.Board" useGeneratedKeys="true" keyProperty="board_no">
         <choose>
             <when test="target != null">
-                INSERT INTO board(board_content, user_id, target)
+                INSERT INTO board(
+                     board_content
+                    ,user_id
+                    ,target
+                )
                 VALUES(
-                #{board_content},
-                #{user_id},
-                #{target}
+                     #{board_content}
+                    ,#{user_id}
+                    ,#{target}
                 )
             </when>
             <otherwise>
-                INSERT INTO board(board_title, board_content, user_id)
+                INSERT INTO board(
+                     board_title
+                    ,board_content
+                    ,user_id
+                    ,type_no
+                )
                 VALUES(
-                #{board_title},
-                #{board_content},
-                #{user_id}
+                     #{board_title}
+                    ,#{board_content}
+                    ,#{user_id}
+                    ,#{type_no}
                 )
             </otherwise>
         </choose>

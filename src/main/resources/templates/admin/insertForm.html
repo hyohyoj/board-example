@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Insert Board Type</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<script th:inline="javascript">
+    $(document).ready(function () {
+        $("#submit").on("click", function() {
+
+            let typeName = $("#type_name").val();
+            let kind = $("#kind").val();
+            let userId = $("#user_id").val();
+
+            if(typeName == '') {
+                $("#errorMsg").html("게시판 이름을 입력해주세요.");
+                return false;
+            } else if(kind == '') {
+                $("#errorMsg").html("게시판 종류를 선택해주세요.");
+                return false;
+            }
+
+            $.ajax({
+                type : "POST",
+                url : "/admin/boardType/insert",
+                dataType:"text",
+                data : {
+                    'type_name' : typeName,
+                    'kind' : kind,
+                    'insert_user' : userId
+                },
+                success : function(data){
+                      if(parseInt(data)) {
+                        alert("생성이 완료되었습니다.");
+                        window.location.replace('/admin');
+                      } else {
+                        alert("생성에 문제가 생겼습니다.");
+                      }
+                }
+            });
+        })
+    })
+</script>
+<body>
+
+<input type="hidden" id="user_id" th:value="${session.loginMember.user_id}" >
+
+<h1>게시판 생성</h1>
+<form th:action="@{/admin/boardType/insert}" th:object="${boardTypeForm}" method="post">
+
+    <p id="errorMsg" style="color:red;" th:text="${msg}"></p>
+
+    <div>
+        <label for="type_name">게시판 이름 : </label>
+        <input type="text" id="type_name" th:field="*{type_name}" class="form-control"
+               th:errorclass="field-error">
+    </div>
+    <br>
+    <div>
+        <label for="kind">게시판 종류</label>
+        <select id="kind" th:field="*{kind}">
+            <option value="qna" selected>질문&답변</option>
+            <option value="gallery">갤러리</option>
+        </select>
+    </div>
+    <br>
+</form>
+    <input id="submit" type="submit" value="완료" />
+    <button onclick="location.href='items.html'" th:onclick="|location.href='@{/admin}'|" type="button">취소</button>
+</body>
+</html>

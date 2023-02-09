@@ -8,16 +8,29 @@
              user_id
             ,user_pw
             ,auth_code
-        FROM user_info
-        WHERE user_id = #{user_id}
+        FROM
+            user_info
+        WHERE
+            user_id = #{user_id}
     </select>
 
     <insert id="insertUser" parameterType="hyo.boardexample.domain.Login">
-            INSERT INTO user_info(user_id, user_pw)
-            VALUES(
-            #{user_id},
-            #{user_pw}
-            )
+        INSERT INTO user_info(
+             user_id
+            ,user_pw
+        )
+        VALUES(
+             #{user_id}
+            ,#{user_pw}
+        )
     </insert>
+
+    <select id="getUserList" resultType="hyo.boardexample.domain.Login">
+        SELECT
+             user_id
+            ,auth_code
+        FROM
+            user_info
+    </select>
 
 </mapper>

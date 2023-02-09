@@ -24,12 +24,12 @@
         <td th:onclick="|location.href='/admin/boardType/detail?num=${type.type_no}'|" th:utext="${type.type_name}"></td>
         <td th:onclick="|location.href='/admin/boardType/detail?num=${type.type_no}'|" th:text="${#strings.arraySplit(type.insert_date, 'T')[0] + ' ' + #strings.arraySplit(type.insert_date, 'T')[1]}"></td>
         <td th:onclick="|location.href='/admin/boardType/detail?num=${type.type_no}'|" th:text="${type.insert_user}"></td>
-        <td><button th:onclick="|modifyBoardType(${type.type_no})|">수정</button></td>
-        <td><button th:onclick="|deleteBoardType(${type.type_no})|">비활성화</button></td>
+        <td th:onclick="|location.href='/admin/boardType/detail?num=${type.type_no}'|" th:text="${#strings.equals(type.delete_yn, 'Y')} ? '비활성화' : '활성화'"></td>
+        <td><button th:onclick="|location.href='/admin/modifyForm?num=${type.type_no}'|">수정</button></td>
     </tr>
     <th:block th:if="${#lists.size(typeList) < 1}">
         <tr>
-            <td colspan="4" style="background-color: lightgrey;">생성한 게시판이 없습니다.</td>
+            <td colspan="5" style="background-color: lightgrey;">생성한 게시판이 없습니다.</td>
         </tr>
     </th:block>
 </th:block>

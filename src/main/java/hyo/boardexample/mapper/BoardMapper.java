@@ -14,8 +14,6 @@ public interface BoardMapper {
 
     List<Board> getAnswerList(Integer num);
 
-    List<BoardType> getBoardTypeList();
-
     Board getOne(Integer num);
 
     int update(Board board);
@@ -25,4 +23,6 @@ public interface BoardMapper {
     int delete(Board board);
 
     int deleteAnswer(Board board);
+
+    int modifyBoardYn(Board board);
 }

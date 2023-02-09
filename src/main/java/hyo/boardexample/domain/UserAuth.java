@@ -11,12 +11,12 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class BoardType {
+public class UserAuth {
+    private Long auth_no;
+    private String user_id;
+    private String auth_code;
     private Long type_no;
-    private String type_name;
+    private String delete_yn;
     private String insert_user;
     private LocalDateTime insert_date;
-    private String delete_yn;
-    private String board_type;
-    private String kind;
 }

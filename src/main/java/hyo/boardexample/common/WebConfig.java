@@ -19,15 +19,6 @@ public class WebConfig implements WebMvcConfigurer {
     private final ObjectMapper objectMapper;
 
     //Lucy Xss filler 적용
-//    @Bean
-//    public FilterRegistrationBean xssFilterBean() {
-//        FilterRegistrationBean registrationBean = new FilterRegistrationBean();
-//        registrationBean.setFilter(new XssEscapeServletFilter());
-//        registrationBean.setOrder(Ordered.LOWEST_PRECEDENCE);
-//        registrationBean.addUrlPatterns("*.do", "*.jsp");
-//        return registrationBean;
-//    }
-
     @Bean
     public FilterRegistrationBean<XssEscapeServletFilter> filterRegistrationBean() {
         FilterRegistrationBean<XssEscapeServletFilter> filterRegistration = new FilterRegistrationBean<>();

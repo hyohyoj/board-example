@@ -10,7 +10,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Login {
-    private String user_id = "";
-    private String user_pw = "";
-    private String auth_code = "";
+    private String user_id;
+    private String user_pw;
+    private String auth_code;
 }

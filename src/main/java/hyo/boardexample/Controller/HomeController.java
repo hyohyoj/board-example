@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.SessionAttribute;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
 @Controller
 public class HomeController {
 
@@ -31,9 +34,16 @@ public class HomeController {
     }
 
     @GetMapping("/admin")
-    public String adminHome(@SessionAttribute(name = SessionConstants.LOGIN_MEMBER, required = false) Login loginMember, Model model) {
+    public String adminHome(@SessionAttribute(name = SessionConstants.LOGIN_MEMBER, required = false) Login loginMember, Model model, HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+
         // 세션에 회원 데이터가 없으면 관리자 홈으로 이동
         if (loginMember == null) {
+            return "/admin/home";
+        }
+        // 관리자가 아닐 경우 관리자 홈으로 이동
+        if (!loginMember.getAuth_code().equals("admin")) {
+            session.invalidate();
             return "/admin/home";
         }
 

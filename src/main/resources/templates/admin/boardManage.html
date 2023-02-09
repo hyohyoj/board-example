@@ -25,7 +25,22 @@
             });
         }
 
+        function getUserList() {
+            $.ajax({
+                type : "GET",
+                url : "/admin/getUserList",
+                dataType : "text",
+                success : function(data) {
+                    // 초기화
+                    $("#userTableBody").empty();
+
+                    $("#userTableBody").html(data);
+                }
+            });
+        }
+
         getBoardTypeList();
+        getUserList();
     })
 </script>
 
@@ -36,12 +51,13 @@
         로그아웃
     </button>
 </form>
-<form th:action="@{/board/insertBoardType}" method="get">
+<form th:action="@{/admin/insertForm}" method="get">
     <button onclick="location.href='items.html'" type="submit">
         게시판 생성
     </button>
 </form>
 <hr>
+<h3>[게시판 관리]</h3>
 <table style="width:500px; text-align:center;">
     <thead>
     <tr>
@@ -49,11 +65,25 @@
         <th>이름</th>
         <th>날짜</th>
         <th>생성자</th>
-        <th></th>
+        <th>상태</th>
         <th></th>
     </tr>
     </thead>
     <tbody id="dataTableBody">
+    </tbody>
+</table>
+<hr>
+<h3>[회원관리]</h3>
+<table style="width:500px; text-align:center;">
+    <thead>
+    <tr>
+        <th>번호</th>
+        <th>아이디</th>
+        <th>권한</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody id="userTableBody">
     </tbody>
 </table>
 

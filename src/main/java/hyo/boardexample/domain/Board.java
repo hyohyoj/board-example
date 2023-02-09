@@ -24,11 +24,13 @@ public class Board {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime insert_date;
     private Long target = null;
+    private Long type_no;
+    private String type_name;
+    private String delete_yn;
     private int page;
     private String keyword;
     private String searchContent;
     private String changeYn;
     private List<Long> fileNumList;
-    private Long type_no;
-    private String type_name;
+
 }

@@ -30,6 +30,7 @@ public class LoginController {
     //컨트롤러 내에서 발생하는 예외를 모두 처리해준다
     @ExceptionHandler(value = Exception.class)
     public String controllerExceptionHandler(Exception e) {
+        System.out.println(new RuntimeException(e + " : 에러 발생"));
         return "/error";
     }
 
@@ -75,12 +76,9 @@ public class LoginController {
         rawPw = loginForm.getUser_pw();
         encodePw = loginMember.getUser_pw();
 
-        //System.out.println("rawPw : " + rawPw + ", encodePw : " + encodePw);
-
         if(!pwEncoder.matches(rawPw, encodePw)) {
             return "비밀번호가 일치하지 않습니다.";
         }
-
 
         return "성공";
     }
@@ -94,18 +92,6 @@ public class LoginController {
 
         Login loginMember = loginService.getUser(loginForm);
         String path = request.getParameter("path");
-
-        // 바인딩 에러가 일어났을 경우 loginForm으로 다시 던짐
-        if(bindingResult.hasErrors()) {
-            model.addAttribute("loginForm", new Login());
-            return "/login/loginForm";
-        }
-        if(loginMember == null || !pwEncoder.matches(loginForm.getUser_pw(), loginMember.getUser_pw())) {
-            //bindingResult.addError(new FieldError("loginForm", "user_id", "아이디 또는 비밀번호가 맞지 않습니다."));
-            //bindingResult.reject("loginFail","아이디 또는 비밀번호가 맞지 않습니다.");
-            model.addAttribute("loginForm", loginForm);
-            return "/login/loginForm";
-        }
 
         // 관리자 페이지 주소로 접근 시
         if(path.equals("/admin/login")) {
@@ -132,14 +118,9 @@ public class LoginController {
 
     @PostMapping("/logout")
     public String logout(HttpServletRequest request, HttpServletResponse response) {
-//        HttpSession session = request.getSession(false);
-//
-//        if(session != null) {
-//            session.invalidate();
-//        }
-
         // 해당 핸들러를 사용하면 logoutSuccessUrl(String)이 무시됨.
         new SecurityContextLogoutHandler().logout(request, response, SecurityContextHolder.getContext().getAuthentication());
+
         return "redirect:/";
     }
 

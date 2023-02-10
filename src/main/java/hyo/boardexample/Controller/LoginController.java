@@ -39,9 +39,7 @@ public class LoginController {
     @ResponseBody
     //@RequestParam String input
     public String strInput(@RequestParam String input){
-        String convertMsg = XssPreventer.escape(input);
-
-        return loginService.stringTest(convertMsg);
+        return loginService.stringTest(input);
     }
     //xss 필터링 json 형식 테스트
     @PostMapping("/dto")

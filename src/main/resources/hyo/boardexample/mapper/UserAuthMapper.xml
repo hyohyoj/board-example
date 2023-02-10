@@ -3,21 +3,26 @@
 
 <mapper namespace="hyo.boardexample.mapper.UserAuthMapper">
 
-    <select id="getUserAuthList" parameterType="String" resultType="hyo.boardexample.domain.UserAuth">
+    <select id="getUserAuthList" parameterType="hyo.boardexample.domain.UserAuth" resultType="hyo.boardexample.domain.UserAuth">
         SELECT
-             auth_no
-            ,user_id
-            ,auth_code
-            ,type_no
-            ,delete_yn
-            ,insert_user
-            ,insert_date
+             a.auth_no
+            ,a.user_id
+            ,a.auth_code
+            ,a.type_no
+            ,a.delete_yn
+            ,a.insert_user
+            ,a.insert_date
+            ,b.type_name
         FROM
-            auth_table
+            auth_table a, board_type b
         WHERE
-            user_id = #{user_id}
+            a.type_no = b.type_no
         AND
-            delete_yn = 'N'
+            a.user_id = #{user_id}
+        <if test="delete_yn == 'N'">
+        AND
+            a.delete_yn = 'N'
+        </if>
     </select>
 
     <insert id="insertUserAuth" parameterType="hyo.boardexample.domain.UserAuth">

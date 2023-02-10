@@ -33,4 +33,20 @@
             user_info
     </select>
 
+    <update id="updateUser" parameterType="hyo.boardexample.domain.Login">
+        UPDATE
+            user_info
+        SET
+            <choose>
+                <when test="auth_code == 'admin'.toString()">
+                    auth_code = 'admin'
+                </when>
+                <otherwise>
+                    auth_code = null
+                </otherwise>
+            </choose>
+        WHERE
+            user_id = #{user_id}
+    </update>
+
 </mapper>

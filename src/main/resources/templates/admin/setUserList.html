@@ -3,10 +3,10 @@
 <html lang="ko">
 <body>
 <tr style='cursor:pointer;' th:each="user, status : ${userList}">
-    <td th:onclick="|location.href='@{/admin/user_detail( user_id = ${user.user_id} )}'|" th:text="${status.count}"></td> <!-- status.index=0부터 시작 / status.count=1부터 시작 -->
-    <td th:onclick="|location.href='@{/admin/user_detail( user_id = ${user.user_id} )}'|" th:text="${user.user_id}"></td>
-    <td th:onclick="|location.href='@{/admin/user_detail( user_id = ${user.user_id} )}'|" th:text="${#strings.isEmpty(user.auth_code) ? '일반' : '관리자'}"></td>
-    <td><button th:onclick="|location.href='@{/admin/user_detail( user_id = ${user.user_id} )}'|">회원관리</button></td>
+    <td th:onclick="|location.href='@{/admin/userDetailForm( user_id = ${user.user_id} )}'|" th:text="${status.count}"></td> <!-- status.index=0부터 시작 / status.count=1부터 시작 -->
+    <td th:onclick="|location.href='@{/admin/userDetailForm( user_id = ${user.user_id} )}'|" th:text="${user.user_id}"></td>
+    <td th:onclick="|location.href='@{/admin/userDetailForm( user_id = ${user.user_id} )}'|" th:text="${#strings.isEmpty(user.auth_code) ? '일반' : '관리자'}"></td>
+    <td><button th:onclick="|location.href='@{/admin/userDetailForm( user_id = ${user.user_id} )}'|">회원관리</button></td>
 </tr>
 <th:block th:if="${#lists.size(userList) < 1}">
     <tr>

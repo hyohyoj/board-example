@@ -7,7 +7,7 @@ import java.util.List;
 
 @Repository
 public interface UserAuthMapper {
-    List<UserAuth> getUserAuthList(String userId);
+    List<UserAuth> getUserAuthList(UserAuth userAuth);
 
     int insertUserAuth(UserAuth userAuth);
 

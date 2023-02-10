@@ -248,28 +248,11 @@
         console.log("filename : " + filename);
     }
 
-<!--    function downloadFile(fileNo) {-->
-<!--        $.ajax({-->
-<!--                type : "GET",-->
-<!--                url : "/board/download?fileNo=" + fileNo,-->
-<!--                success : function(data){-->
-<!--                    alert('파일 다운로드가 완료되었습니다.');-->
-<!--                }-->
-<!--                ,beforeSend : function() {-->
-<!--                    $('.wrap-loading').removeClass('display-none');-->
-<!--                }-->
-<!--                ,complete : function() {-->
-<!--                    $('.wrap-loading').addClass('display-none');-->
-<!--                }-->
-<!--                ,error : function(request,status,error) {-->
-<!--                    alert('다운로드 도중 에러가 발생했습니다.');-->
-<!--                }-->
-<!--        });-->
-<!--    }-->
-
 </script>
 
 <body>
+
+<form th:action="@{/board/update}" th:object="${fileList}" method="post" enctype="multipart/form-data" id="boardFileInsertForm" onsubmit="return false;">
 
 <input type="hidden" id="sessionId" th:value="${session.loginMember.user_id}" />
 
@@ -289,7 +272,7 @@
       <td th:text="${#strings.arraySplit(boardForm.insert_date, 'T')[0] + ' ' + #strings.arraySplit(boardForm.insert_date, 'T')[1]}">날짜 부분</td>
       <td id="boardUser" th:text="${boardForm.user_id}">작성자 부분</td>
     </tr>
-    <tr><td colspan="4"><textarea id="content" style="width: 397px; height: 240px; resize: none;" th:utext="${boardForm.board_content}" readonly>내용 부분</textarea></td></tr>
+    <tr><td colspan="4"><textarea id="content" name="board_content" style="width: 397px; height: 240px; resize: none;" th:utext="${boardForm.board_content}" readonly>내용 부분</textarea></td></tr>
   </tbody>
 </table>
 
@@ -299,18 +282,13 @@
         <a  th:href="@{/board/download( fileNo=${row.file_no} )}">
             [[ ${row.original_name} ]]
         </a>
-<!--        <a href="#" th:onclick="|downloadFile(${row.file_no})|">-->
-<!--            [[ ${row.original_name} ]]-->
-<!--        </a>-->
         <br>
     </div>
 </div>
 
-<form th:action="@{/board/update}" th:object="${fileList}" method="post" enctype="multipart/form-data" id="boardFileInsertForm">
-
     <!--/* 파일이 변경된 경우, 해당 파라미터를 이용하여 파일 삭제 및 재등록 처리 */-->
-    <input type="hidden" id="changeYn" value="N" />
-
+    <input type="hidden" id="changeYn" name="changeYn" value="N" />
+    <input type="hidden" name="board_no" th:value="${boardForm.board_no}" />
 
     <div id="fileModifyDiv" style="display: none;">
         <span>첨부 파일</span><br>

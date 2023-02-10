@@ -14,8 +14,8 @@ import java.util.List;
 public class UserAuthService {
     private final UserAuthMapper userAuthMapper;
 
-    public List<UserAuth> getUserAuthList(String userId) {
-        return userAuthMapper.getUserAuthList(userId);
+    public List<UserAuth> getUserAuthList(UserAuth userAuth) {
+        return userAuthMapper.getUserAuthList(userAuth);
     }
 
     public int insertUserAuth(UserAuth userAuth) {

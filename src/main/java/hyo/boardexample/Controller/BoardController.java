@@ -20,6 +20,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletResponse;
@@ -155,17 +156,18 @@ public class BoardController {
     @ResponseBody
     public String insert(
             @RequestPart(value="files", required = false) MultipartFile[] files,
-            @RequestPart(value="board") Board board) throws IOException
+            MultipartHttpServletRequest multipartHttpServletRequest) throws IOException
     {
-        // xss escape 처리 (multipartResolver 처리 한 form-data는 lucy-xss-filter가 먹히지 않아서 따로 처리해줘야 함)
-        board.setBoard_title(XssPreventer.escape(board.getBoard_title()));
-        board.setBoard_content(XssPreventer.escape(board.getBoard_content()));
+        // filter를 이용해 들어온 request를 중간에 가로채서 xss처리 후 반환해줌
+        Board board = (Board) multipartHttpServletRequest.getAttribute("board");
 
         String result = "실패";
 
         int success = boardService.insert(board);
 
         if(success >= 1) {
+            result = "성공";
+            
             // insert한 게시글의 board_no 받아옴
             Long boardNo = board.getBoard_no();
             System.out.println("boardNo : " +  boardNo);
@@ -174,8 +176,8 @@ public class BoardController {
             List<FileInfo> fileList = fileUtils.uploadFiles(files, boardNo);
             if(!CollectionUtils.isEmpty(fileList)) {
                 success = fileInfoService.insertFiles(fileList);
-                if(success >= 1) {
-                    result = "성공";
+                if(success < 1) {
+                    result = "실패";
                 }
             }
         }
@@ -193,15 +195,13 @@ public class BoardController {
     @ResponseBody
     public int update(
             @RequestPart(value="files", required = false) MultipartFile[] files,
-            @RequestPart(value="board") Board board) throws IOException, MaxUploadSizeExceededException
+            @RequestPart(value="board") Board board,
+            MultipartHttpServletRequest multipartHttpServletRequest) throws IOException, MaxUploadSizeExceededException
     {
         List<Long> fileNumList = board.getFileNumList();
+        board = (Board) multipartHttpServletRequest.getAttribute("board");
 
         int result = 0;
-
-        // xss escape 처리 (multipartResolver 처리 한 form-data는 lucy-xss-filter가 먹히지 않아서 따로 처리해줘야 함)
-        board.setBoard_title(XssPreventer.escape(board.getBoard_title()));
-        board.setBoard_content(XssPreventer.escape(board.getBoard_content()));
 
         int success = boardService.update(board);
 

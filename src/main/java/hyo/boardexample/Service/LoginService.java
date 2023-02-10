@@ -23,6 +23,10 @@ public class LoginService {
         return loginMapper.getUserList();
     }
 
+    public int updateUser(Login login) {
+        return loginMapper.updateUser(login);
+    }
+
     public String stringTest(String input){
         return input;
     }

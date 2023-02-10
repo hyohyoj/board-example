@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>User Detail</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<script th:inline="javascript">
+    $(document).ready(function() {
+
+    })
+
+    function authPopup(userId) {
+        let url = '/admin/popup/authPopup?user_id=' + userId;
+        let option = 'width=650px, height=250px, top=300px, left=300px';
+        window.open(url, '게시판 권한 추가', option);
+    }
+
+    function setAdmin(userId, authCode) {
+
+        $.ajax({
+            type : "POST",
+            url : "/admin/loginAuth/update",
+            dataType:"text",
+            data : {
+                'user_id' : userId,
+                'auth_code' : authCode
+            },
+            success : function(data){
+                  if(parseInt(data) == 1) {
+                    alert("전환되었습니다.");
+                    location.reload();
+                  } else {
+                    alert("수정에 문제가 생겼습니다.");
+                  }
+            }
+        });
+    }
+
+    function changeDeleteYn(authNo, yn) {
+
+        let deleteYn;
+
+        if(yn == 'Y') {
+            deleteYn = 'N';
+        } else if(yn == 'N') {
+            deleteYn = 'Y';
+        }
+
+        $.ajax({
+            type : "POST",
+            url : "/admin/userAuth/delete",
+            dataType:"text",
+            data : {
+                'auth_no' : authNo,
+                'delete_yn' : deleteYn
+            },
+            success : function(data){
+                  if(parseInt(data) == 1) {
+                    alert("변경되었습니다.");
+                    location.reload();
+                  } else {
+                    alert("변경에 문제가 생겼습니다.");
+                  }
+            }
+        });
+    }
+
+</script>
+<body>
+<input type="hidden" id="sessionId" th:value="${session.loginMember.user_id}" >
+
+<h1>회원 정보 관리</h1>
+<form th:action="@{/admin/userDetail/modify}" th:object="${userInfo}" method="post" onsubmit="return false;" >
+
+    <p id="errorMsg" style="color:red;" th:text="${msg}"></p>
+
+    <div>
+        <label for="user_id">유저 아이디 : </label>
+        <input type="text" id="user_id" th:field="*{user_id}" readonly>
+    </div>
+    <br>
+    <div>
+        <label for="auth_code">회원 타입 : </label>
+        <span id="auth_code" th:text="${#strings.isEmpty(userInfo.auth_code) ? '일반' : '관리자'}" ></span>
+        <th:block th:if="${not #strings.equals(userInfo.user_id, session.loginMember.user_id)}">
+            <input type="button" value="관리자 전환" th:if="${#strings.isEmpty(userInfo.auth_code)}" th:onclick="setAdmin([[${userInfo.user_id}]], 'admin')" >
+            <input type="button" value="사용자 전환" th:unless="${#strings.isEmpty(userInfo.auth_code)}" th:onclick="setAdmin([[${userInfo.user_id}]], 'user')" >
+        </th:block>
+    </div>
+    <br>
+</form>
+<hr>
+<h3>[게시판 권한 목록]</h3>
+<button id="authPopupBtn" th:onclick="authPopup([[${userInfo.user_id}]])">권한 추가</button>
+<br><br>
+<table style="width:700px; text-align:center;">
+    <thead>
+    <tr>
+        <th>번호</th>
+        <th>게시판 이름</th>
+        <th>아이디</th>
+        <th>권한</th>
+        <th>생성자</th>
+        <th>부여 날짜</th>
+        <th>상태</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody id="userAuthTableBody">
+        <tr th:each="auth : ${authList}">
+            <td th:text="${auth.auth_no}"></td>
+            <td th:text="${auth.type_name}"></td>
+            <td th:text="${auth.user_id}"></td>
+            <th:block th:switch="${auth.auth_code}">
+                <td th:case="M">매니저</td>
+                <td th:case="F">열혈회원</td>
+            </th:block>
+            <td th:text="${auth.insert_user}"></td>
+            <td th:text="${#strings.arraySplit(auth.insert_date, 'T')[0] + ' ' + #strings.arraySplit(auth.insert_date, 'T')[1]}"></td>
+            <td th:text="${#strings.equals(auth.delete_yn, 'Y')} ? '비활성화' : '활성화'"></td>
+            <td><button type="button" th:onclick="changeDeleteYn([[${auth.auth_no}]], [[${auth.delete_yn}]])">상태변경</button></td>
+        </tr>
+        <th:block th:if="${#lists.size(authList) < 1}">
+            <tr>
+                <td colspan="7" style="background-color: lightgrey;">조회된 권한이 없습니다.</td>
+            </tr>
+        </th:block>
+    </tbody>
+</table>
+
+
+</body>
+</html>

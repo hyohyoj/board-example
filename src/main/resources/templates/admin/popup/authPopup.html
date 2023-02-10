@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>게시판 권한 부여</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<script th:inline="javascript">
+    function insertUserAuth() {
+        let typeNo = $("#type_no").val();
+        let authCode = $("#auth_code").val();
+        let userId = $("#user_id").val();
+        let sessionId = $("#session_id").val();
+
+        $.ajax({
+            type : "POST",
+            url : "/admin/userAuth/insert",
+            dataType:"text",
+            data : {
+                'user_id' : userId,
+                'auth_code' : authCode,
+                'type_no' : typeNo,
+                'insert_user' : sessionId
+            },
+            success : function(data){
+                  if(parseInt(data) == 1) {
+                    alert("등록되었습니다.");
+                    opener.parent.location.reload();
+                    window.close();
+                  } else {
+                    alert("등록에 문제가 생겼습니다.");
+                  }
+            }
+        });
+    }
+</script>
+<body>
+<h1>게시판 권한 부여</h1>
+<hr>
+<h3 th:text="|${userId} 사용자에게 권한을 부여합니다.|"></h3>
+<form>
+    <div>
+        <label for="type_no">게시판 선택 : </label>
+        <select id="type_no" name="type_no" >
+            <th:block th:each="row, status : ${boardTypeList}">
+                <option th:value="${row.type_no}" th:text="${row.type_name}" th:selected="${status.first}"></option>
+            </th:block>
+        </select>
+    </div>
+    <br>
+    <div>
+        <label for="auth_code">권한 : </label>
+        <select id="auth_code" name="auth_code" >
+            <option value="M" selected>매니저</option>
+            <option value="F">열혈회원</option>
+        </select>
+    </div>
+
+    <input type="hidden" th:value="${userId}" id="user_id" name="user_id">
+    <input type="hidden" id="session_id" name="session_id" th:value="${session.loginMember.user_id}">
+</form>
+<br>
+<button onclick="insertUserAuth();" >완료</button>
+<button onclick="window.close();" >닫기</button>
+</body>
+</html>

@@ -3,10 +3,12 @@ package hyo.boardexample.Controller;
 import hyo.boardexample.Service.BoardService;
 import hyo.boardexample.Service.BoardTypeService;
 import hyo.boardexample.Service.LoginService;
+import hyo.boardexample.Service.UserAuthService;
 import hyo.boardexample.common.SessionConstants;
 import hyo.boardexample.domain.Board;
 import hyo.boardexample.domain.BoardType;
 import hyo.boardexample.domain.Login;
+import hyo.boardexample.domain.UserAuth;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,6 +27,7 @@ public class AdminController {
     private final BoardTypeService boardTypeService;
     private final BoardService boardService;
     private final LoginService loginService;
+    private final UserAuthService userAuthService;
 
     @ExceptionHandler(value = Exception.class)
     public String controllerExceptionHandler(Exception e) {
@@ -109,6 +112,61 @@ public class AdminController {
         }
 
         return mv;
+    }
+
+    @GetMapping("/userDetailForm")
+    public String userDetailForm(
+            Model model,
+            @RequestParam(value = "user_id") String userId,
+            @SessionAttribute(name = SessionConstants.LOGIN_MEMBER, required = false) Login loginMember,
+            HttpServletRequest request)
+    {
+        String url = adminSessionRedirect(loginMember, request.getRequestURI(), request);
+
+        Login login = new Login();
+        login.setUser_id(userId);
+
+        UserAuth userAuth = new UserAuth();
+        userAuth.setUser_id(userId);
+
+        model.addAttribute("userInfo", loginService.getUser(login));
+        model.addAttribute("authList", userAuthService.getUserAuthList(userAuth));
+
+        return url;
+    }
+
+    @PostMapping("/loginAuth/update")
+    @ResponseBody
+    public int loginAuthUpdate(@ModelAttribute Login login) {
+        return loginService.updateUser(login);
+    }
+
+    @PostMapping("/userAuth/delete")
+    @ResponseBody
+    public int deleteUserAuth(@ModelAttribute UserAuth userAuth) {
+        return userAuthService.deleteUserAuth(userAuth);
+    }
+
+    @GetMapping("/popup/authPopup")
+    public String authPopup(
+            Model model,
+            @RequestParam(value = "user_id") String userId,
+            @SessionAttribute(name = SessionConstants.LOGIN_MEMBER, required = false) Login loginMember,
+            HttpServletRequest request)
+    {
+        String url = adminSessionRedirect(loginMember, request.getRequestURI(), request);
+
+        List<BoardType>boardTypeList = boardTypeService.getBoardTypeList("admin");
+
+        model.addAttribute("userId", userId);
+        model.addAttribute("boardTypeList", boardTypeList);
+        return url;
+    }
+
+    @PostMapping("/userAuth/insert")
+    @ResponseBody
+    public int insertUserAuth(@ModelAttribute UserAuth userAuth) {
+        return userAuthService.insertUserAuth(userAuth);
     }
 
 }

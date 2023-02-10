@@ -19,4 +19,5 @@ public class UserAuth {
     private String delete_yn;
     private String insert_user;
     private LocalDateTime insert_date;
+    private String type_name; /* 게시판 이름 */
 }

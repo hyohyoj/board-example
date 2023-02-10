@@ -14,6 +14,9 @@ create table board (
     insert_date datetime default current_timestamp
 );
 alter table board add column target int default null;
+alter table board add column type_no int default null;
+alter table board add foreign key(type_no) references board_type(type_no);
+alter table board add column delete_yn char(1) not null default 'N';
 
 create table file_table (
 	file_no int not null auto_increment primary key,
@@ -27,17 +30,98 @@ create table file_table (
     foreign key (board_no) references board(board_no)
 );
 
+create table board_type (
+	type_no int not null auto_increment primary key,
+	type_name varchar(100) not null,
+	insert_user varchar(50),
+    insert_date datetime default current_timestamp
+);
+alter table board_type add column delete_yn char(1) not null default 'N';
+alter table board_type add column kind varchar(50);
+
+create table auth_table (
+	auth_no int not null auto_increment primary key,
+    user_id varchar(50) not null,
+    auth_code varchar(50) not null,
+    type_no int,
+    delete_yn char(1) not null default 'N',
+    insert_user varchar(50),
+    insert_date datetime default current_timestamp
+);
 
 update user_info set auth_code = 'admin' where user_id = 'admin';
 
+update board set type_no = 1 where board_no in (1099464,
+1099463,
+1099462,
+1099461,
+1099460,
+1099459,
+1099458,
+1099457,
+1099456,
+1099455,
+1099454,
+1099453,
+1099452,
+1099451,
+1099450,
+1099449,
+1099448,
+1099447,
+1099446,
+1099445);
+
+
 select * from user_info;
+select * from auth_table;
 select * from file_table;
+select * from board_type;
 select * from board order by board_no desc;
+delete from board where board_no in (1099565);
 
-select * from board where board_title like concat('%','script','%');
+insert into auth_table(user_id, auth_code, type_no, insert_user)
+values('hyo', 'manager', 1, 'admin');
 
-delete from file_table where board_no in (1099491, 1099528);
-delete from board where board_no in (1099532);
+update auth_table set auth_code = 'M' where auth_no = 1;
+
+SELECT
+             a.auth_no
+            ,a.user_id
+            ,a.auth_code
+            ,a.type_no
+            ,a.delete_yn
+            ,a.insert_user
+            ,a.insert_date
+            ,b.type_name
+        FROM
+            auth_table a, board_type b
+        WHERE
+			a.type_no = b.type_no
+        AND
+            a.user_id = 'hyo';
+
+
+update user_info set auth_code = null where user_id not in ('admin');
+
+update board_type set kind = 'qna' where type_no = 2;
+
+update board set board_content = '&lt;script&gt;alert(&#39;xss테스트~~~&#39;);&lt;/script&gt;' where board_no = 1099564;
+update user_info set auth_code = 'admin' where user_id = 'admin';
+
+select * from board where delete_yn = 'N' and type_no = 1;
+
+insert into board_type(type_name, insert_user) values('기타게시판', 'admin');
+
+
+desc board_type;
+
+select * from board where user_id like concat('%','test','%') and target is null;
+
+delete from file_table where board_no in (1099540,1099541,1099542);
+explain delete from board where target = 1099532;
+
+delete from board where board_no in (1099540,1099541,1099542);
 
 
 drop table file_table;
@@ -79,7 +163,7 @@ select * from board where user_id = 'test';
 desc user_info;
 alter table user_info change user_pw user_pw char(60);
 
-update user_info set user_pw='$2a$10$bMZA/uTTvtTgutjaWS0fzOwRnnI83SzbMoUEcI2pLiCFAKBZZxf6u' where user_id = 'hyo';
+update user_info set user_pw='$2a$10$bMZA/uTTvtTgutjaWS0fzOwRnnI83SzbMoUEcI2pLiCFAKBZZxf6u' where user_id = 'admin';
 
 insert into user_info values('hyo', '1234');
 

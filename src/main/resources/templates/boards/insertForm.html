@@ -111,11 +111,11 @@
 
 <body>
 <h1>게시글 등록</h1>
-<form th:action="@{/board/insert}" th:object="${boardForm}" method="post" enctype="multipart/form-data" id="boardFileInsertForm">
+<form th:action="@{/board/insert}" th:object="${boardForm}" method="post" enctype="multipart/form-data" id="boardFileInsertForm" onsubmit="return false;">
 
   <div>
     <label for="type_no">게시판 선택 : </label>
-    <select id="type_no" >
+    <select id="type_no" name="type_no" >
         <th:block th:each="row, status : ${typeList}">
             <option th:value="${row.type_no}" th:text="${row.type_name}" th:selected="${status.first}"></option>
         </th:block>
@@ -145,7 +145,7 @@
     </div>
   <hr id="btnDiv">
 
-  <input type="hidden" id="user_id" th:value="${session.loginMember.user_id}">
+  <input type="hidden" id="user_id" name="user_id" th:value="${session.loginMember.user_id}">
 
 </form>
 

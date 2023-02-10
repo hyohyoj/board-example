@@ -10,4 +10,5 @@ public interface LoginMapper {
     Login getUser(Login loginForm);
     int insertUser(Login signUpForm);
     List<Login> getUserList();
+    int updateUser(Login login);
 }

@@ -52,4 +52,8 @@ public class BoardService {
     public int modifyBoardYn(Board board) {
         return boardMapper.modifyBoardYn(board);
     }
+
+    public String getKind(Integer num) {
+        return boardMapper.getKind(num);
+    }
 }

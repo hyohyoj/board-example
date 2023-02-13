@@ -4,16 +4,18 @@ import com.nhncorp.lucy.security.xss.XssPreventer;
 import hyo.boardexample.Service.BoardService;
 import hyo.boardexample.Service.BoardTypeService;
 import hyo.boardexample.Service.FileInfoService;
+import hyo.boardexample.Service.UserAuthService;
 import hyo.boardexample.common.FileUtils;
 import hyo.boardexample.common.SessionConstants;
-import hyo.boardexample.domain.Board;
-import hyo.boardexample.domain.BoardType;
-import hyo.boardexample.domain.FileInfo;
-import hyo.boardexample.domain.Login;
+import hyo.boardexample.domain.*;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.fileupload.FileUploadBase;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.CollectionUtils;
@@ -23,9 +25,12 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.file.Paths;
 import java.time.format.DateTimeFormatter;
@@ -39,6 +44,7 @@ public class BoardController {
     private final BoardService boardService;
     private final BoardTypeService boardTypeService;
     private final FileInfoService fileInfoService;
+    private  final UserAuthService userAuthService;
     private final FileUtils fileUtils;
 
     //컨트롤러 내에서 발생하는 예외를 모두 처리해준다
@@ -79,14 +85,18 @@ public class BoardController {
             @SessionAttribute(name = SessionConstants.LOGIN_MEMBER, required = false) Login loginMember
     ) {
 
+        UserAuth userAuth = new UserAuth();
+        userAuth.setUser_id(loginMember.getUser_id());
+        userAuth.setType_no(boardModel.getType_no());
+        int managerCount = 0;
+
         List<Board> boardList = null;
         ModelAndView mv = new ModelAndView();
 
         boardModel.setPage((boardModel.getPage()-1) * 10);
 
         // 유저 아이디 보내서 권한 테이블 조회
-        // 해당 권한을 userAuthList 에 넣음
-
+        managerCount = userAuthService.getUserAuthManage(userAuth);
 
         try{
             boardList = boardService.boardList(boardModel);
@@ -95,6 +105,7 @@ public class BoardController {
             mv.addObject("boardList", boardList);
             mv.addObject("sessionId", loginMember.getUser_id());
             mv.addObject("auth", loginMember.getAuth_code());
+            mv.addObject("managerCount", managerCount);
         } catch (Exception e) {
             mv.setViewName("/error");
             return mv;
@@ -286,23 +297,75 @@ public class BoardController {
     public String detail(
             @RequestParam(value="num") Integer num,
             @SessionAttribute(name = SessionConstants.LOGIN_MEMBER, required = false) Login loginMember,
-            Model model)
+            Model model,
+            HttpServletRequest request)
     {
-        String boardUser = boardService.boardOne(num).getUser_id();
+        Board boardForm = boardService.boardOne(num);
+        List<Board> answerList = boardService.boardAnswerList(num);
+        List<FileInfo> fileList = fileInfoService.selectFileList(num);
+        String boardKind = boardService.getKind(num);
+        List<BoardType> boardTypeList = boardTypeService.getBoardTypeList("user");
+
+        String boardUser = boardForm.getUser_id();
         String sessionId = loginMember.getUser_id();
         String sessionAuth = loginMember.getAuth_code();
+
+        UserAuth userAuth = new UserAuth();
+        userAuth.setUser_id(sessionId);
+        userAuth.setType_no(boardForm.getType_no());
+        int managerCount = userAuthService.getUserAuthManage(userAuth);
+
+        String extension = "";
+        String uploadDate = "";
+        String uploadPath = "";
+
         boolean validation = false;
 
-        // 관리자 권한이거나, 게시글 작성자인 경우 권한 부여
-        if(sessionAuth.equals("admin") || sessionId.equals(boardUser)) {
+        // 관리자 권한이거나, 게시판 매니저이거나, 게시글 작성자인 경우 수정 권한 부여
+        if(sessionAuth.equals("admin") || managerCount > 0 || sessionId.equals(boardUser)) {
             validation = true;
         }
 
-        model.addAttribute("boardForm", boardService.boardOne(num));
-        model.addAttribute("answerList", boardService.boardAnswerList(num));
-        model.addAttribute("fileList", fileInfoService.selectFileList(num));
-        model.addAttribute("validation", validation);
+        for (FileInfo file : fileList) {
+            // 파일 확장자 체크
+            extension = FilenameUtils.getExtension(file.getOriginal_name());
+
+            // 파일이 이미지인 경우
+            if(extension.equals("jpg") || extension.equals("png")) {
+                // 파일 저장 경로 찾기
+                uploadDate = file.getInsert_time().format(DateTimeFormatter.ofPattern("yyMMdd"));
+                uploadPath = Paths.get("image", uploadDate, file.getSave_name()).toString();
+                break;
+            }
+        }
+        if(uploadPath.isEmpty()) {
+            // 이미지가 없는 경우 임시 이미지 출력
+            uploadPath = "../images/thumbnail.png";
+        }
+
+        model.addAttribute("boardForm", boardForm);     // 게시글 상세 내용
+        model.addAttribute("answerList", answerList);   // 게시글 답변 목록
+        model.addAttribute("fileList", fileList);       // 게시글 첨부 파일 목록
+        model.addAttribute("typeList", boardTypeList);  // 게시판 타입 리스트
+        model.addAttribute("filePath", uploadPath);     // 이미지 경로
+        model.addAttribute("boardKind", boardKind);     // 게시판 종류 (gallery, qna)
+        model.addAttribute("validation", validation);   // 권한 인증
 
         return "/boards/detail";
+    }
+
+    // 이미지 출력
+    @GetMapping(value = "/image/{uploaddate}/{imagename}", produces = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE})
+    public ResponseEntity<byte[]> imageSearch(
+            @PathVariable("imagename") String imagename,
+            @PathVariable("uploaddate") String uploaddate) throws IOException
+    {
+        String uploadPath = Paths.get("C:", "develop", "upload", uploaddate, imagename).toString();
+
+        InputStream imageStream = new FileInputStream(uploadPath);
+        byte[] imageByteArray = IOUtils.toByteArray(imageStream);
+        imageStream.close();
+
+        return new ResponseEntity<byte[]>(imageByteArray, HttpStatus.OK);
     }
 }

@@ -4,12 +4,14 @@ import hyo.boardexample.common.SessionConstants;
 import hyo.boardexample.domain.Login;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.SessionAttribute;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 @Controller
 public class HomeController {
@@ -51,6 +53,67 @@ public class HomeController {
         model.addAttribute("member", loginMember);
 
         return "/admin/boardManage";
+    }
+
+    // 날짜 테스트
+    @GetMapping("/date")
+    @ResponseBody
+    public ModelAndView dateTest(
+            @RequestParam(value = "now", defaultValue = "", required = false) String now,
+            @RequestParam(value = "type", defaultValue = "", required = false) String type) throws ParseException {
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+        ModelAndView mv = new ModelAndView();
+        mv.setViewName("/dateTest");
+
+        String nowDate = "";
+        String preDate = "";
+        String nextDate = "";
+
+        if(now.isEmpty()) {
+            nowDate = sdf.format(cal.getTime());
+
+            cal.add(cal.DATE, -1);  // 하루 전
+            preDate = sdf.format(cal.getTime());
+
+            cal.add(cal.DATE, +2);  // 하루 후
+            nextDate = sdf.format(cal.getTime());
+        } else {
+            // 이전날
+            if(type.equals("pre")) {
+                // 가운데 날짜를 담음
+                cal.setTime(sdf.parse(now));
+
+                cal.add(cal.DATE, -1);  // 현재
+                nowDate = sdf.format(cal.getTime());
+
+                cal.add(cal.DATE, -1);  // 하루 전
+                preDate = sdf.format(cal.getTime());
+
+                cal.add(cal.DATE, +2);  // 하루 후
+                nextDate = sdf.format(cal.getTime());
+            } // 다음날
+            else if(type.equals("next")) {
+                // 가운데 날짜를 담음
+                cal.setTime(sdf.parse(now));
+
+                cal.add(cal.DATE, +1);  // 현재
+                nowDate = sdf.format(cal.getTime());
+
+                cal.add(cal.DATE, -1);  // 하루 전
+                preDate = sdf.format(cal.getTime());
+
+                cal.add(cal.DATE, +2);  // 하루 후
+                nextDate = sdf.format(cal.getTime());
+            }
+        }
+
+        mv.addObject("nowDate", nowDate);
+        mv.addObject("preDate", preDate);
+        mv.addObject("nextDate", nextDate);
+
+        return mv;
     }
 
 }

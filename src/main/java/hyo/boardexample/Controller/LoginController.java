@@ -3,6 +3,7 @@ package hyo.boardexample.Controller;
 import com.nhncorp.lucy.security.xss.XssPreventer;
 import hyo.boardexample.Service.LoginService;
 import hyo.boardexample.common.SessionConstants;
+import hyo.boardexample.domain.BoardType;
 import hyo.boardexample.domain.Login;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,10 +16,15 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.List;
 
 @Controller
 @RequiredArgsConstructor

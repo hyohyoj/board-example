@@ -40,6 +40,7 @@
             ,board_content
             ,insert_date
             ,target
+            ,type_no
         FROM board
         WHERE delete_yn = 'N'
         <if test="searchContent != null">
@@ -74,14 +75,29 @@
             ,board_title
             ,board_content
             ,insert_date
+            ,type_no
         FROM board
         WHERE board_no = #{num}
     </select>
 
+    <select id="getKind" parameterType="Integer" resultType="String">
+        SELECT
+            t.kind
+        FROM
+            board b, board_type t
+        WHERE
+            b.type_no = t.type_no
+        AND b.board_no = #{num}
+    </select>
+
     <update id="update" parameterType="hyo.boardexample.domain.Board">
-        UPDATE board
-        SET board_content = #{board_content}
-        WHERE board_no = #{board_no}
+        UPDATE
+            board
+        SET
+             board_content = #{board_content}
+            ,type_no = #{type_no}
+        WHERE
+            board_no = #{board_no}
     </update>
 
     <update id="modifyBoardYn" parameterType="hyo.boardexample.domain.Board">

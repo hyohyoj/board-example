@@ -19,7 +19,6 @@
 
 <!-- 관리자 페이지 -->
 <th:block th:if="${not #strings.isEmpty(auth)}">
-    <!-- th:onclick="|location.href='/admin/boardType/detail?num=${type.type_no}'|" -->
     <tr th:each="type : ${typeList}">
         <td th:text="${type.type_no}"></td>
         <td th:utext="${type.type_name}"></td>

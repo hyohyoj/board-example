@@ -25,4 +25,6 @@ public interface BoardMapper {
     int deleteAnswer(Board board);
 
     int modifyBoardYn(Board board);
+
+    String getKind(Integer num);
 }

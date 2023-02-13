@@ -55,6 +55,7 @@ public class XssFilter implements Filter {
             user_id = multipartRequest.getParameter("user_id");
         } else if(uri.equals("/board/update")) {
             board_no = multipartRequest.getParameter("board_no");
+            type_no = multipartRequest.getParameter("type_no");
             changeYn = multipartRequest.getParameter("changeYn");
         }
         board_content = multipartRequest.getParameter("board_content");
@@ -68,6 +69,7 @@ public class XssFilter implements Filter {
                 board.setUser_id(XssPreventer.escape(user_id));
             } else if(uri.equals("/board/update")) {
                 board.setBoard_no(Long.parseLong(XssPreventer.escape(board_no)));
+                board.setType_no(Long.parseLong(XssPreventer.escape(type_no)));
                 board.setChangeYn(XssPreventer.escape(changeYn));
             }
             board.setBoard_content(XssPreventer.escape(board_content));

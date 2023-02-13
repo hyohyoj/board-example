@@ -68,6 +68,7 @@
         $("#fileDiv").hide();
         $("#fileModifyDiv").show();
         $("#modify").text("완료");
+        $("#boardTypeDiv").show();
       }
       else if(status == "완료") {
 
@@ -138,6 +139,7 @@
       $("#answerContent").val("");
       $("#modify").text("수정");
       $("#answerInsert").text("답변하기");
+      $("#boardTypeDiv").hide();
 
       $("#fileModifyDiv").html(fileHtml);
       $("#fileDiv").show();
@@ -254,41 +256,61 @@
 
 <form th:action="@{/board/update}" th:object="${fileList}" method="post" enctype="multipart/form-data" id="boardFileInsertForm" onsubmit="return false;">
 
-<input type="hidden" id="sessionId" th:value="${session.loginMember.user_id}" />
-
-<table style="text-align:center;">
-  <thead>
-  <tr>
-    <th>번호</th>
-    <th>제목</th>
-    <th>날짜</th>
-    <th>작성자</th>
-  </tr>
-  </thead>
-  <tbody id="dataTableBody">
-    <tr>
-      <td id="boardNum" th:text="${boardForm.board_no}">번호 부분</td>
-      <td th:utext="${boardForm.board_title}">제목 부분</td>
-      <td th:text="${#strings.arraySplit(boardForm.insert_date, 'T')[0] + ' ' + #strings.arraySplit(boardForm.insert_date, 'T')[1]}">날짜 부분</td>
-      <td id="boardUser" th:text="${boardForm.user_id}">작성자 부분</td>
-    </tr>
-    <tr><td colspan="4"><textarea id="content" name="board_content" style="width: 397px; height: 240px; resize: none;" th:utext="${boardForm.board_content}" readonly>내용 부분</textarea></td></tr>
-  </tbody>
-</table>
-
-<div id="fileDiv" style="border:solid 1px black; display: inline-block;">
-    <span>첨부 파일</span><br>
-    <div th:each="row, status : ${fileList}">
-        <a  th:href="@{/board/download( fileNo=${row.file_no} )}">
-            [[ ${row.original_name} ]]
-        </a>
-        <br>
-    </div>
-</div>
-
+    <input type="hidden" id="sessionId" th:value="${session.loginMember.user_id}" />
     <!--/* 파일이 변경된 경우, 해당 파라미터를 이용하여 파일 삭제 및 재등록 처리 */-->
     <input type="hidden" id="changeYn" name="changeYn" value="N" />
     <input type="hidden" name="board_no" th:value="${boardForm.board_no}" />
+
+    <div id="boardTypeDiv" style="display: none;">
+        <label for="type_no">게시판 선택 : </label>
+        <select id="type_no" name="type_no" >
+            <th:block th:each="row, status : ${typeList}">
+                <option th:value="${row.type_no}" th:text="${row.type_name}" th:selected="${status.first}"></option>
+            </th:block>
+        </select>
+    </div>
+
+    <table style="text-align:center;">
+        <thead>
+            <tr>
+                <th>번호</th>
+                <th>제목</th>
+                <th>날짜</th>
+                <th>작성자</th>
+            </tr>
+        </thead>
+        <tbody id="dataTableBody">
+            <tr>
+                <td id="boardNum" th:text="${boardForm.board_no}">번호 부분</td>
+                <td th:utext="${boardForm.board_title}">제목 부분</td>
+                <td th:text="${#strings.arraySplit(boardForm.insert_date, 'T')[0] + ' ' + #strings.arraySplit(boardForm.insert_date, 'T')[1]}">날짜 부분</td>
+                <td id="boardUser" th:text="${boardForm.user_id}">작성자 부분</td>
+            </tr>
+            <tr th:if="${#strings.equals(boardKind, 'gallery')}">
+                <td colspan="4">
+                    <div id="imageDiv">
+                        <img th:src="${filePath}" style="width: 300px;">
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">
+                    <textarea id="content" name="board_content" style="width: 397px; height: 240px; resize: none;"
+                              th:utext="${boardForm.board_content}" readonly>내용 부분</textarea>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div id="fileDiv" style="border:solid 1px black; display: inline-block;">
+        <span>첨부 파일</span><br>
+        <div th:each="row, status : ${fileList}">
+            <a  th:href="@{/board/download( fileNo=${row.file_no} )}">
+                [[ ${row.original_name} ]]
+            </a>
+            <br>
+        </div>
+    </div>
 
     <div id="fileModifyDiv" style="display: none;">
         <span>첨부 파일</span><br>
@@ -324,21 +346,24 @@
 <br>
 <button id="modify">수정</button>
 <button style="display: none;" id="cancel">취소</button>
-<button id="answerInsert">답변하기</button>
-<br>
-<textarea id="answerContent" style="width: 397px; height: 120px; display: none; resize: none;"></textarea>
 
-<div id="answerDiv">
-  <div th:each="answer : ${answerList}">
-    <span>[답변]</span><br>
-    <span th:text="|작성자 : ${answer.user_id}|">작성자</span>
-    &nbsp
-    <span th:text="${'작성날짜 : ' + #strings.arraySplit(answer.insert_date, 'T')[0] + ' ' + #strings.arraySplit(answer.insert_date, 'T')[1]}">작성날짜</span>
+<th:block th:if="${not #strings.equals(boardKind, 'gallery')}">
+    <button id="answerInsert">답변하기</button>
     <br>
-    <textarea style='width: 397px; height: 120px; background-color:lightgray; resize: none;' readonly th:utext="${answer.board_content}"></textarea>
-    <br>
-  </div>
-</div>
+    <textarea id="answerContent" style="width: 397px; height: 120px; display: none; resize: none;"></textarea>
+
+    <div id="answerDiv">
+        <div th:each="answer : ${answerList}">
+            <span>[답변]</span><br>
+            <span th:text="|작성자 : ${answer.user_id}|">작성자</span>
+            &nbsp
+            <span th:text="${'작성날짜 : ' + #strings.arraySplit(answer.insert_date, 'T')[0] + ' ' + #strings.arraySplit(answer.insert_date, 'T')[1]}">작성날짜</span>
+            <br>
+            <textarea style='width: 397px; height: 120px; background-color:lightgray; resize: none;' readonly th:utext="${answer.board_content}"></textarea>
+            <br>
+        </div>
+    </div>
+</th:block>
 
 <div class="wrap-loading display-none">
     <div><img style="width: 50px;" src="../images/loading.gif" /></div>

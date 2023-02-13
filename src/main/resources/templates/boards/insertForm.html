@@ -113,27 +113,27 @@
 <h1>게시글 등록</h1>
 <form th:action="@{/board/insert}" th:object="${boardForm}" method="post" enctype="multipart/form-data" id="boardFileInsertForm" onsubmit="return false;">
 
-  <div>
-    <label for="type_no">게시판 선택 : </label>
-    <select id="type_no" name="type_no" >
-        <th:block th:each="row, status : ${typeList}">
-            <option th:value="${row.type_no}" th:text="${row.type_name}" th:selected="${status.first}"></option>
-        </th:block>
-    </select>
-  </div>
-  <br>
-  <div>
-    <label for="board_title">제목</label>
-    <input type="text" style="width: 397px;" id="board_title" th:field="*{board_title}" class="form-control" enctype="multipart/form-data"
-           th:errorclass="field-error">
-    <div class="field-error" th:errors="*{board_title}" />
-  </div>
-  <div>
-    <label for="board_content">내용</label>
-    <textarea id="board_content" style="width: 397px; height: 240px;" th:field="*{board_content}" class="form-control"
-              th:errorclass="field-error"></textarea>
-    <div class="field-error" th:errors="*{board_content}" />
-  </div>
+    <div>
+        <label for="type_no">게시판 선택 : </label>
+        <select id="type_no" name="type_no" >
+            <th:block th:each="row, status : ${typeList}">
+                <option th:value="${row.type_no}" th:text="${row.type_name}" th:selected="${status.first}"></option>
+            </th:block>
+        </select>
+    </div>
+    <br>
+    <div>
+        <label for="board_title">제목</label>
+        <input type="text" style="width: 397px;" id="board_title" th:field="*{board_title}" class="form-control" enctype="multipart/form-data"
+               th:errorclass="field-error">
+        <div class="field-error" th:errors="*{board_title}" />
+    </div>
+    <div>
+        <label for="board_content">내용</label>
+        <textarea id="board_content" style="width: 397px; height: 240px;" th:field="*{board_content}" class="form-control"
+                  th:errorclass="field-error"></textarea>
+        <div class="field-error" th:errors="*{board_content}" />
+    </div>
     <hr>
     <div data-name="fileDiv">
         <label for="file_0"><strong>첨부 파일</strong></label>
@@ -143,17 +143,18 @@
             <button type="button" onclick="removeFile(this)">-</button>
         </div>
     </div>
-  <hr id="btnDiv">
+    <hr id="btnDiv">
 
-  <input type="hidden" id="user_id" name="user_id" th:value="${session.loginMember.user_id}">
+    <input type="hidden" id="user_id" name="user_id" th:value="${session.loginMember.user_id}">
 
 </form>
 
 <div class="col">
-  <input id="submit" type="submit" value="작성" />
+    <input id="submit" type="submit" value="작성" />
 </div>
+
 <div class="col">
-  <button onclick="location.href='items.html'"
+    <button onclick="location.href='items.html'"
           th:onclick="|location.href='@{/}'|"
           type="button">취소</button>
 </div>

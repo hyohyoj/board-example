@@ -29,4 +29,8 @@ public class UserAuthService {
     public int updateUserAuth(UserAuth userAuth) {
         return userAuthMapper.updateUserAuth(userAuth);
     }
+
+    public int getUserAuthManage(UserAuth userAuth) {
+        return userAuthMapper.getUserAuthManage(userAuth);
+    }
 }

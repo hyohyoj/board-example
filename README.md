@@ -1,5 +1,6 @@
 # board-example
-Intellij + spring boot + gradle + Thymeleaf + mysql 연동  
+Intellij + spring boot(2.5.8) + gradle + Thymeleaf + mysql 연동  
+Java 11
 
 ## dependencies
 spring-web  
@@ -21,11 +22,12 @@ mybatis
 - ~~게시글 파일 첨부 기능 (https://congsong.tistory.com/39)~~  
   ~~-> 게시글 삭제 시, 파일도 삭제 처리 필요~~  
   ~~-> 파일 다운로드 기능 필요~~  
-- 관리자 페이지 구축  
+- ~~관리자 페이지 구축~~  
   ~~-> 회원 관리 기능 추가~~  
   ~~-> 게시판 마다 권한 부여 기능~~
-- 게시판 타입에 따라 뷰단 다르게 보이기(갤러리 타입/질문답변 타입)
-- ~~xss 인터셉터->필터 사용해서 들어오는 모든 요청 처리하도록 재구축~~
+- ~~게시판 타입에 따라 뷰단 다르게 보이기(갤러리 타입/질문답변 타입)~~  
+- ~~xss 인터셉터->필터 사용해서 들어오는 모든 요청 처리하도록 재구축~~  
+- 공지사항 작성 및 게시글 상단 출력  
 
 
 [부가기능]  

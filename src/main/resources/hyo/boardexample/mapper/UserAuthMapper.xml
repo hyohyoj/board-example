@@ -25,6 +25,23 @@
         </if>
     </select>
 
+    <select id="getUserAuthManage" parameterType="hyo.boardexample.domain.UserAuth" resultType="int">
+        SELECT
+            count(auth_no)
+        FROM
+            auth_table a, board_type b
+        WHERE
+            a.type_no = b.type_no
+        AND
+            a.user_id = #{user_id}
+        AND
+            a.type_no = #{type_no}
+        AND
+            a.delete_yn = 'N'
+        AND
+            a.auth_code = 'M'
+    </select>
+
     <insert id="insertUserAuth" parameterType="hyo.boardexample.domain.UserAuth">
         INSERT INTO auth_table(
              user_id

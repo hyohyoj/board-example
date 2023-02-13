@@ -17,6 +17,7 @@ alter table board add column target int default null;
 alter table board add column type_no int default null;
 alter table board add foreign key(type_no) references board_type(type_no);
 alter table board add column delete_yn char(1) not null default 'N';
+alter table board add column notice_yn char(1) not null default 'N';
 
 create table file_table (
 	file_no int not null auto_increment primary key,
@@ -75,9 +76,53 @@ update board set type_no = 1 where board_no in (1099464,
 
 select * from user_info;
 select * from auth_table;
-select * from file_table;
+select * from file_table order by file_no desc;
 select * from board_type;
 select * from board order by board_no desc;
+select * from board;
+select * from board where board_no = 23;
+
+select
+	c.board_no,
+    c.user_id,
+    c.board_title,
+    c.board_content,
+    c.insert_date,
+    c.target,
+    c.type_no
+from (
+(select * from board where delete_yn = 'N' and notice_yn = 'Y')
+union all
+(select * from board where delete_yn = 'N' limit 10,10)
+) c;
+
+select a.* from board a where a.delete_yn = 'N' and notice_yn = 'Y'
+union all
+select b.* from board b where b.delete_yn = 'N' limit 10,10;
+
+
+select *
+from board
+where delete_yn = 'N'
+order by notice_yn desc
+limit 0,10;
+
+SELECT
+            count(auth_no)
+        FROM
+            auth_table a, board_type b
+        WHERE
+            a.type_no = b.type_no
+        AND
+            a.user_id = 'test'
+        AND
+            a.type_no = 4
+        AND
+            a.delete_yn = 'N'
+        AND
+            a.auth_code = 'M';
+
+
 delete from board where board_no in (1099565);
 
 insert into auth_table(user_id, auth_code, type_no, insert_user)
@@ -101,6 +146,17 @@ SELECT
         AND
             a.user_id = 'hyo';
 
+SELECT
+t.kind
+FROM
+board b, board_type t
+WHERE
+b.type_no = t.type_no
+AND b.board_no = 1099445;
+
+select * from board where board_no = 23;
+
+update board set notice_yn = 'Y' where board_no = 10000;
 
 update user_info set auth_code = null where user_id not in ('admin');
 

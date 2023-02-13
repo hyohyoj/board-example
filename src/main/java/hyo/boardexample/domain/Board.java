@@ -27,6 +27,7 @@ public class Board {
     private Long type_no;
     private String type_name;
     private String delete_yn;
+    private String notice_yn;
     private int page;
     private String keyword;
     private String searchContent;

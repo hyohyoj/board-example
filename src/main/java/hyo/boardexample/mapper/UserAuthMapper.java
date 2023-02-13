@@ -14,4 +14,6 @@ public interface UserAuthMapper {
     int deleteUserAuth(UserAuth userAuth);
 
     int updateUserAuth(UserAuth userAuth);
+
+    int getUserAuthManage(UserAuth userAuth);
 }

@@ -169,5 +169,11 @@ public class AdminController {
         return userAuthService.insertUserAuth(userAuth);
     }
 
+    @PostMapping("/userAuth/check")
+    @ResponseBody
+    public int checkUserAuth(@ModelAttribute UserAuth userAuth) {
+        return userAuthService.checkUserAuth(userAuth);
+    }
+
 }
 

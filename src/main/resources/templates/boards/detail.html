@@ -69,6 +69,7 @@
         $("#fileModifyDiv").show();
         $("#modify").text("완료");
         $("#boardTypeDiv").show();
+        $("#noticeYnDiv").show();
       }
       else if(status == "완료") {
 
@@ -140,6 +141,7 @@
       $("#modify").text("수정");
       $("#answerInsert").text("답변하기");
       $("#boardTypeDiv").hide();
+      $("#noticeYnDiv").hide();
 
       $("#fileModifyDiv").html(fileHtml);
       $("#fileDiv").show();
@@ -265,10 +267,16 @@
         <label for="type_no">게시판 선택 : </label>
         <select id="type_no" name="type_no" >
             <th:block th:each="row, status : ${typeList}">
-                <option th:value="${row.type_no}" th:text="${row.type_name}" th:selected="${status.first}"></option>
+                <option th:value="${row.type_no}" th:text="${row.type_name}" th:selected="${#strings.equals(row.type_no, boardForm.type_no)}"></option>
             </th:block>
         </select>
     </div>
+    <th:block th:if="${#strings.equals(session.loginMember.auth_code, 'admin')}">
+        <div id="noticeYnDiv" style="display: none;">
+            <label for="notice_yn">공지사항</label>
+            <input type="checkbox" id="notice_yn" name="notice_yn" value="Y" th:checked="${#strings.equals(boardForm.notice_yn, 'Y')}" />
+        </div>
+    </th:block>
 
     <table style="text-align:center;">
         <thead>
@@ -364,6 +372,8 @@
         </div>
     </div>
 </th:block>
+<br>
+<button th:onclick="|location.href='@{/(type_no = ${type_no}, selected_page = ${selected_page}, keyword = ${keyword}, searchContent = ${searchContent})}'|">목록</button>
 
 <div class="wrap-loading display-none">
     <div><img style="width: 50px;" src="../images/loading.gif" /></div>

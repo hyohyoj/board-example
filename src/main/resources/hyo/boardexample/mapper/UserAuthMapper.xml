@@ -42,6 +42,21 @@
             a.auth_code = 'M'
     </select>
 
+    <select id="checkUserAuth" parameterType="hyo.boardexample.domain.UserAuth" resultType="int">
+        SELECT
+            count(auth_no)
+        FROM
+            auth_table
+        WHERE
+            user_id = #{user_id}
+        AND
+            type_no = #{type_no}
+        AND
+            auth_code = #{auth_code}
+        AND
+            delete_yn = 'N'
+    </select>
+
     <insert id="insertUserAuth" parameterType="hyo.boardexample.domain.UserAuth">
         INSERT INTO auth_table(
              user_id

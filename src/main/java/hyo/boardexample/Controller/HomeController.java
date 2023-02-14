@@ -1,7 +1,11 @@
 package hyo.boardexample.Controller;
 
+import hyo.boardexample.Service.BoardTypeService;
 import hyo.boardexample.common.SessionConstants;
+import hyo.boardexample.domain.Board;
+import hyo.boardexample.domain.BoardType;
 import hyo.boardexample.domain.Login;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -12,9 +16,13 @@ import javax.servlet.http.HttpSession;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.List;
 
 @Controller
+@RequiredArgsConstructor
 public class HomeController {
+
+    private final BoardTypeService boardTypeService;
 
     //컨트롤러 내에서 발생하는 예외를 모두 처리해준다
     @ExceptionHandler(value = Exception.class)
@@ -23,14 +31,25 @@ public class HomeController {
     }
 
     @GetMapping("/")
-    public String home(@SessionAttribute(name = SessionConstants.LOGIN_MEMBER, required = false) Login loginMember, Model model) {
+    public String home(@SessionAttribute(name = SessionConstants.LOGIN_MEMBER, required = false) Login loginMember,
+                       @ModelAttribute Board board,
+                       Model model)
+    {
         // 세션에 회원 데이터가 없으면 홈으로 이동
         if (loginMember == null) {
             return "index";
         }
 
+        List<BoardType> boardTypeList = boardTypeService.getBoardTypeList("user");
+
         // 세션이 유지되면 로그인 홈으로 이동
         model.addAttribute("member", loginMember);
+        model.addAttribute("typeList", boardTypeList);
+        // 페이지 값 유지
+        model.addAttribute("type_no", board.getType_no());
+        model.addAttribute("selected_page", board.getSelected_page());
+        model.addAttribute("keyword", board.getKeyword());
+        model.addAttribute("searchContent", board.getSearchContent());
 
         return "/boards/hello";
     }

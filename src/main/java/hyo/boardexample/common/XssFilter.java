@@ -45,6 +45,7 @@ public class XssFilter implements Filter {
         String board_no = "";
         String changeYn = "";
         String board_content = "";
+        String notice_yn = "";
 
         CommonsMultipartResolver commonsMultipartResolver = new CommonsMultipartResolver();
         MultipartHttpServletRequest multipartRequest = commonsMultipartResolver.resolveMultipart(servletRequest);
@@ -53,10 +54,12 @@ public class XssFilter implements Filter {
             board_title = multipartRequest.getParameter("board_title");
             type_no = multipartRequest.getParameter("type_no");
             user_id = multipartRequest.getParameter("user_id");
+            notice_yn = multipartRequest.getParameter("notice_yn");
         } else if(uri.equals("/board/update")) {
             board_no = multipartRequest.getParameter("board_no");
             type_no = multipartRequest.getParameter("type_no");
             changeYn = multipartRequest.getParameter("changeYn");
+            notice_yn = multipartRequest.getParameter("notice_yn");
         }
         board_content = multipartRequest.getParameter("board_content");
 
@@ -65,14 +68,14 @@ public class XssFilter implements Filter {
 
             if(uri.equals("/board/insert")) {
                 board.setBoard_title(XssPreventer.escape(board_title));
-                board.setType_no(Long.parseLong(XssPreventer.escape(type_no)));
                 board.setUser_id(XssPreventer.escape(user_id));
             } else if(uri.equals("/board/update")) {
                 board.setBoard_no(Long.parseLong(XssPreventer.escape(board_no)));
-                board.setType_no(Long.parseLong(XssPreventer.escape(type_no)));
                 board.setChangeYn(XssPreventer.escape(changeYn));
             }
             board.setBoard_content(XssPreventer.escape(board_content));
+            board.setType_no(Long.parseLong(XssPreventer.escape(type_no)));
+            board.setNotice_yn(notice_yn);
 
             multipartRequest.setAttribute("board", board);
         }catch (Exception e) {

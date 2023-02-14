@@ -41,6 +41,7 @@
             ,insert_date
             ,target
             ,type_no
+            ,notice_yn
         FROM board
         WHERE delete_yn = 'N'
         <if test="searchContent != null">
@@ -57,6 +58,28 @@
                 LIMIT 0, 10
             </otherwise>
         </choose>
+    </select>
+
+    <!-- 공지사항 목록 상단 출력 (최근 3개 까지) -->
+    <select id="getNoticeList" parameterType="hyo.boardexample.domain.Board" resultType="hyo.boardexample.domain.Board">
+        SELECT
+             board_no
+            ,user_id
+            ,board_title
+            ,insert_date
+            ,target
+            ,type_no
+        FROM
+            board
+        WHERE
+            delete_yn = 'N'
+        AND
+            notice_yn = 'Y'
+        <if test="type_no != null">
+            AND type_no = #{type_no}
+        </if>
+        ORDER BY insert_date DESC
+        LIMIT 3
     </select>
 
     <select id="getAnswerList" parameterType="Integer" resultType="hyo.boardexample.domain.Board">
@@ -76,6 +99,7 @@
             ,board_content
             ,insert_date
             ,type_no
+            ,notice_yn
         FROM board
         WHERE board_no = #{num}
     </select>
@@ -96,6 +120,14 @@
         SET
              board_content = #{board_content}
             ,type_no = #{type_no}
+            <choose>
+                <when test="notice_yn == 'Y'.toString()">
+                    ,notice_yn = #{notice_yn}
+                </when>
+                <otherwise>
+                    ,notice_yn = 'N'
+                </otherwise>
+            </choose>
         WHERE
             board_no = #{board_no}
     </update>
@@ -129,12 +161,21 @@
                     ,board_content
                     ,user_id
                     ,type_no
+                    ,notice_yn
                 )
                 VALUES(
                      #{board_title}
                     ,#{board_content}
                     ,#{user_id}
                     ,#{type_no}
+                    <choose>
+                        <when test="notice_yn == 'Y'.toString()">
+                            ,#{notice_yn}
+                        </when>
+                        <otherwise>
+                            ,'N'
+                        </otherwise>
+                    </choose>
                 )
             </otherwise>
         </choose>

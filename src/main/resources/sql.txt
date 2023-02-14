@@ -82,6 +82,17 @@ select * from board order by board_no desc;
 select * from board;
 select * from board where board_no = 23;
 
+select * from board
+where delete_yn = 'N'
+AND user_id LIKE CONCAT('%','hyo','%')
+AND target IS NULL
+and type_no = 1
+order by insert_date desc
+limit 0, 10;
+
+
+select * from board where delete_yn = 'N' and notice_yn = 'Y' order by insert_date desc limit 3;
+
 select
 	c.board_no,
     c.user_id,

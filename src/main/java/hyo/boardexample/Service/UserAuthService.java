@@ -33,4 +33,8 @@ public class UserAuthService {
     public int getUserAuthManage(UserAuth userAuth) {
         return userAuthMapper.getUserAuthManage(userAuth);
     }
+
+    public int checkUserAuth(UserAuth userAuth) {
+        return userAuthMapper.checkUserAuth(userAuth);
+    }
 }

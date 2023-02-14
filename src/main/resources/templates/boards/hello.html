@@ -58,6 +58,10 @@ ul li.on a {
 .display-none{ /*감추기*/
     display:none;
 }
+
+table {
+    border-spacing: 0px;
+}
 </style>
 
 <script th:inline="javascript">
@@ -73,7 +77,7 @@ ul li.on a {
     function selectList(selectedPage, boardType) {
 
         if(typeof selectedPage == 'undefined' || selectedPage == '' ) selectedPage = 1;
-        if(typeof boardType == 'undefined' || boardType == '' ) boardType = null;
+        //if(typeof boardType == 'undefined' || boardType == '' ) boardType = null;
 
         console.log("boardType : " + boardType);
 
@@ -231,7 +235,7 @@ ul li.on a {
 
                     if(parseInt(data) >= 1) {
                       alert('삭제되었습니다.');
-                      window.location.replace('/');
+                      window.location.replace('/?boardType=' + $("#boardType").val() + '&selectedpage=' + $("#selectedPage").val());
                     } else {
                         alert('삭제에 문제가 생겼습니다.');
                     }
@@ -246,18 +250,39 @@ ul li.on a {
         }
     }
 
-    function typeChange(type) {
-        console.log("type : " + type);
+    function typeChange(el) {
+        let type = $(el).attr('id');
+        console.log($(el).attr('id'));
+
+        $("#boardTypeUl > li").removeClass();
+        $(el).parent('li').addClass('on');
+
         $("#boardType").val(type);
+        $("#selectedPage").val('1');
         selectList(1, type);
     }
 
+    function goToBoard(boardNo) {
+        // 게시판 타입, 페이징 값 유지
+        $(location).attr('href', '/board/detail?num=' + boardNo
+                                            + '&type_no=' + $("#boardType").val()
+                                            + '&selected_page=' + $("#selectedPage").val()
+                                            + '&keyword=' + $("#searchKeyword").val()
+                                            + '&searchContent=' + $("#searchInput").val());
+    }
+
     $(document).ready(function () {
+
+        let selectKeyword = [[${keyword}]];
+        if(selectKeyword != null) {
+            $("#searchKeyword").val([[${keyword}]]);
+        }
 
         globalCurrentPage = $("#selectedPage").val();
         keyword = $("#searchKeyword").val();
         searchContent = $("#searchInput").val();
         sessionId = $("#sessionId").val();
+        boardType = $("#boardType").val();
 
         function getBoardTypeList() {
             $.ajax({
@@ -277,12 +302,14 @@ ul li.on a {
         $("#searchKeyword").on("change", function() {
             keyword = $(this).val();
             console.log(keyword);
-        })
+        });
+
         $("#searchBtn").on("click", function() {
             searchContent = $("#searchInput").val();
             boardType = $("#boardType").val();
             selectList(1, boardType);
-        })
+        });
+
         $("#searchInput").on("keyup",function(key){
             if(key.keyCode==13) {
                 searchContent = $("#searchInput").val();
@@ -291,8 +318,20 @@ ul li.on a {
             }
         });
 
-        selectList(globalCurrentPage);
-        getBoardTypeList();
+        document.onkeydown = function(e){
+            /* F5, Ctrl+r, Ctrl+F5 */
+            if(e.keyCode == 116 || e.ctrlKey == true && (e.keyCode == 82)){
+                e.cancelBubble = true;
+                e.returnValue = false;
+
+                //새로고침 시, 페이지 유지 값 초기화
+                history.replaceState({}, null, location.pathname);  // 주소창의 parameter 제거
+                location.reload();
+            }
+        }
+
+        selectList(globalCurrentPage, boardType);
+        //getBoardTypeList();
 
     })
 
@@ -313,6 +352,18 @@ ul li.on a {
 <hr>
 
 <div id="boardTypeList">
+    <ul id="boardTypeUl">
+        <li th:class="${#strings.isEmpty(type_no) ? 'on' : 'off'}">
+            <a href="javascript:void(0);" onclick="typeChange(this);">전체게시판</a>
+        </li>
+        <th:block th:each="row, status : ${typeList}">
+            <li th:class="${#strings.equals(type_no, row.type_no) ? 'on' : 'off'}">
+                <a href="javascript:void(0);" th:id="${row.type_no}" onclick="typeChange(this);">
+                    [[ ${row.type_name} ]]
+                </a>
+            </li>
+        </th:block>
+    </ul>
 </div>
 
 <hr>
@@ -322,7 +373,7 @@ ul li.on a {
         <option value="board_title">제목</option>
         <option value="board_content">내용</option>
     </select>
-    <input type="text" id="searchInput" />
+    <input type="text" id="searchInput" th:value="${searchContent}" />
     <button id="searchBtn" type="button">
         검색
     </button>
@@ -344,8 +395,8 @@ ul li.on a {
     </tbody>
 </table>
 
-<input type="hidden" id="selectedPage" />
-<input type="hidden" id="boardType" />
+<input type="hidden" id="selectedPage" name="selectedPage" th:value="${selected_page}" />
+<input type="hidden" id="boardType" name="boardType" th:value="${type_no}" />
 <input type="hidden" id="sessionId" th:value="${session.loginMember.user_id}" />
 
 <ul id="pagingul">

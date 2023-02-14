@@ -91,6 +91,7 @@ public class BoardController {
         int managerCount = 0;
 
         List<Board> boardList = null;
+        List<Board> boardNoticeList = null;
         ModelAndView mv = new ModelAndView();
 
         boardModel.setPage((boardModel.getPage()-1) * 10);
@@ -100,9 +101,11 @@ public class BoardController {
 
         try{
             boardList = boardService.boardList(boardModel);
+            boardNoticeList = boardService.boardNoticeList(boardModel);
 
             mv.setViewName("/boards/setSelectList");
             mv.addObject("boardList", boardList);
+            mv.addObject("boardNoticeList", boardNoticeList);
             mv.addObject("sessionId", loginMember.getUser_id());
             mv.addObject("auth", loginMember.getAuth_code());
             mv.addObject("managerCount", managerCount);
@@ -295,6 +298,7 @@ public class BoardController {
 
     @GetMapping("/detail")
     public String detail(
+            @ModelAttribute Board board,
             @RequestParam(value="num") Integer num,
             @SessionAttribute(name = SessionConstants.LOGIN_MEMBER, required = false) Login loginMember,
             Model model,
@@ -321,9 +325,12 @@ public class BoardController {
 
         boolean validation = false;
 
-        // 관리자 권한이거나, 게시판 매니저이거나, 게시글 작성자인 경우 수정 권한 부여
-        if(sessionAuth.equals("admin") || managerCount > 0 || sessionId.equals(boardUser)) {
-            validation = true;
+        if(boardForm.getNotice_yn().equals("Y")) {
+            // 공지사항 : 관리자, 작성자인 경우 수정 권한 부여
+            validation = sessionAuth.equals("admin") || sessionId.equals(boardUser) ? true : false;
+        } else {
+            // 일반 게시글 : 관리자, 게시판 매니저, 작성자인 경우 수정 권한 부여
+            validation = sessionAuth.equals("admin") || managerCount > 0 || sessionId.equals(boardUser) ? true : false;
         }
 
         for (FileInfo file : fileList) {
@@ -350,6 +357,11 @@ public class BoardController {
         model.addAttribute("filePath", uploadPath);     // 이미지 경로
         model.addAttribute("boardKind", boardKind);     // 게시판 종류 (gallery, qna)
         model.addAttribute("validation", validation);   // 권한 인증
+        // 페이지 값 유지
+        model.addAttribute("type_no", board.getType_no());
+        model.addAttribute("selected_page", board.getSelected_page());
+        model.addAttribute("keyword", board.getKeyword());
+        model.addAttribute("searchContent", board.getSearchContent());
 
         return "/boards/detail";
     }

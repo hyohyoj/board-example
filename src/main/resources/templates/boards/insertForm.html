@@ -122,6 +122,13 @@
         </select>
     </div>
     <br>
+    <th:block th:if="${#strings.equals(session.loginMember.auth_code, 'admin')}">
+        <div>
+            <label for="notice_yn">공지사항</label>
+            <input type="checkbox" id="notice_yn" name="notice_yn" value="Y" th:checked="${#strings.equals(notice_yn, 'Y')}" />
+        </div>
+        <br>
+    </th:block>
     <div>
         <label for="board_title">제목</label>
         <input type="text" style="width: 397px;" id="board_title" th:field="*{board_title}" class="form-control" enctype="multipart/form-data"

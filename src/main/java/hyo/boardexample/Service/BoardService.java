@@ -25,6 +25,10 @@ public class BoardService {
         return boardMapper.getList(board);
     }
 
+    public List<Board> boardNoticeList(Board board) {
+        return boardMapper.getNoticeList(board);
+    }
+
     public List<Board> boardAnswerList(Integer num) {
         return boardMapper.getAnswerList(num);
     }

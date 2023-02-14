@@ -33,5 +33,6 @@ public class Board {
     private String searchContent;
     private String changeYn;
     private List<Long> fileNumList;
+    private String selected_page;
 
 }

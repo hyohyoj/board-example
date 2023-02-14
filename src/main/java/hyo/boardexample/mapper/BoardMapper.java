@@ -12,6 +12,8 @@ public interface BoardMapper {
     
     List<Board> getList(Board board);
 
+    List<Board> getNoticeList(Board board);
+
     List<Board> getAnswerList(Integer num);
 
     Board getOne(Integer num);

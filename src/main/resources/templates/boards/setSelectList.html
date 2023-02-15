@@ -2,37 +2,112 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <html lang="ko">
 <body>
-    <!-- 공지사항 목록 -->
-    <tr style='cursor:pointer; background-color: #eda712;' th:each="notice : ${boardNoticeList}">
-        <td th:onclick="|goToBoard(${notice.board_no})|" th:text="${notice.board_no}"></td>
-        <td th:onclick="|goToBoard(${notice.board_no})|" th:utext="${notice.board_title}"></td>
-        <td th:onclick="|goToBoard(${notice.board_no})|" th:text="${#strings.arraySplit(notice.insert_date, 'T')[0] + ' ' + #strings.arraySplit(notice.insert_date, 'T')[1]}"></td>
-        <td th:onclick="|goToBoard(${notice.board_no})|" th:text="${notice.user_id}"></td>
-        <div th:if="${sessionId == notice.user_id || auth == 'admin'}">
-            <td><button th:onclick="|deleteBoard(${notice.board_no})|">삭제</button></td>
-        </div>
-    </tr>
-    <!-- 게시글 목록 -->
-    <tr style='cursor:pointer;' th:each="board : ${boardList}">
-        <td th:onclick="|goToBoard(${board.board_no})|" th:text="${board.board_no}"></td>
-        <td th:onclick="|goToBoard(${board.board_no})|" th:utext="${board.board_title}"></td>
-        <td th:onclick="|goToBoard(${board.board_no})|" th:text="${#strings.arraySplit(board.insert_date, 'T')[0] + ' ' + #strings.arraySplit(board.insert_date, 'T')[1]}"></td>
-        <td th:onclick="|goToBoard(${board.board_no})|" th:text="${board.user_id}"></td>
-        <th:block th:if="${board.notice_yn == 'N'}">
-            <div th:if="${sessionId == board.user_id || managerCount > 0 || auth == 'admin'}">
-                <td><button th:onclick="|deleteBoard(${board.board_no})|">삭제</button></td>
-            </div>
-        </th:block>
-        <th:block th:unless="${board.notice_yn == 'N'}">
-            <div th:if="${sessionId == board.user_id || auth == 'admin'}">
-                <td><button th:onclick="|deleteBoard(${board.board_no})|">삭제</button></td>
-            </div>
-        </th:block>
-    </tr>
-    <th:block th:if="${#lists.size(boardList) < 1}">
+<!-- 질문 답변 게시판 -->
+<th:block th:if="${#strings.equals(boardKind, 'qna')}">
+    <thead>
         <tr>
-            <td colspan="4" style="background-color: lightgrey;">게시글이 없습니다.</td>
+            <th>번호</th>
+            <th>제목</th>
+            <th>날짜</th>
+            <th>작성자</th>
+            <th></th>
         </tr>
-    </th:block>
+    </thead>
+    <tbody>
+        <!-- 공지사항 목록 -->
+        <tr style='cursor:pointer; background-color: #eda712;' th:each="notice : ${boardNoticeList}">
+            <td th:onclick="|goToBoard(${notice.board_no})|">-</td>
+            <td th:onclick="|goToBoard(${notice.board_no})|" th:utext="${notice.board_title}"></td>
+            <td th:onclick="|goToBoard(${notice.board_no})|" th:text="${#strings.arraySplit(notice.insert_date, 'T')[0] + ' ' + #strings.arraySplit(notice.insert_date, 'T')[1]}"></td>
+            <td th:onclick="|goToBoard(${notice.board_no})|" th:text="${notice.user_id}"></td>
+            <div th:if="${sessionId == notice.user_id || auth == 'admin'}">
+                <td><button th:onclick="|deleteBoard(${notice.board_no})|">삭제</button></td>
+            </div>
+        </tr>
+        <!-- 게시글 목록 -->
+        <tr style='cursor:pointer;' th:each="board, status : ${boardList}">
+            <!-- 총 개수 - ( ((현재페이지 - 1) * 화면당 게시글 로우행 수) + 로우인덱스) -->
+            <td th:onclick="|goToBoard(${board.board_no})|" th:text="${boardCount - (((boardPage - 1) * 10) + status.index)}"></td>
+            <td th:onclick="|goToBoard(${board.board_no})|" th:utext="${board.board_title}"></td>
+            <td th:onclick="|goToBoard(${board.board_no})|" th:text="${#strings.arraySplit(board.insert_date, 'T')[0] + ' ' + #strings.arraySplit(board.insert_date, 'T')[1]}"></td>
+            <td th:onclick="|goToBoard(${board.board_no})|" th:text="${board.user_id}"></td>
+            <th:block th:if="${board.notice_yn == 'N'}">
+                <div th:if="${sessionId == board.user_id || managerCount > 0 || auth == 'admin'}">
+                    <td><button th:onclick="|deleteBoard(${board.board_no})|">삭제</button></td>
+                </div>
+            </th:block>
+            <th:block th:unless="${board.notice_yn == 'N'}">
+                <div th:if="${sessionId == board.user_id || auth == 'admin'}">
+                    <td><button th:onclick="|deleteBoard(${board.board_no})|">삭제</button></td>
+                </div>
+            </th:block>
+        </tr>
+        <th:block th:if="${#lists.size(boardList) < 1}">
+            <tr>
+                <td colspan="5" style="background-color: lightgrey;">게시글이 없습니다.</td>
+            </tr>
+        </th:block>
+    </tbody>
+</th:block>
+
+
+<!-- 갤러리 게시판 -->
+<th:block th:if="${#strings.equals(boardKind, 'gallery')}">
+    <thead>
+        <tr>
+            <th>번호</th>
+            <th></th>
+            <th>제목</th>
+            <th>날짜</th>
+            <th>작성자</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- 공지사항 목록 -->
+        <tr style='cursor:pointer; background-color: #eda712;' th:each="notice : ${boardNoticeList}">
+            <td th:onclick="|goToBoard(${notice.board_no})|">-</td>
+            <td th:onclick="|goToBoard(${notice.board_no})|">
+                <div>
+                    <img th:src="${notice.imageUploadPath}" style="width: 100px;">
+                </div>
+            </td>
+            <td th:onclick="|goToBoard(${notice.board_no})|" th:utext="${notice.board_title}"></td>
+            <td th:onclick="|goToBoard(${notice.board_no})|" th:text="${#strings.arraySplit(notice.insert_date, 'T')[0] + ' ' + #strings.arraySplit(notice.insert_date, 'T')[1]}"></td>
+            <td th:onclick="|goToBoard(${notice.board_no})|" th:text="${notice.user_id}"></td>
+            <div th:if="${sessionId == notice.user_id || auth == 'admin'}">
+                <td><button th:onclick="|deleteBoard(${notice.board_no})|">삭제</button></td>
+            </div>
+        </tr>
+        <!-- 게시글 목록 -->
+        <tr style='cursor:pointer;' th:each="board, status : ${boardList}">
+            <!-- 총 개수 - ( ((현재페이지 - 1) * 화면당 게시글 로우행 수) + 로우인덱스) -->
+            <td th:onclick="|goToBoard(${board.board_no})|" th:text="${boardCount - (((boardPage - 1) * 10) + status.index)}"></td>
+            <td th:onclick="|goToBoard(${board.board_no})|">
+                <div>
+                    <img th:src="${board.imageUploadPath}" style="width: 100px;">
+                </div>
+            </td>
+            <td th:onclick="|goToBoard(${board.board_no})|" th:utext="${board.board_title}"></td>
+            <td th:onclick="|goToBoard(${board.board_no})|" th:text="${#strings.arraySplit(board.insert_date, 'T')[0] + ' ' + #strings.arraySplit(board.insert_date, 'T')[1]}"></td>
+            <td th:onclick="|goToBoard(${board.board_no})|" th:text="${board.user_id}"></td>
+            <th:block th:if="${board.notice_yn == 'N'}">
+                <div th:if="${sessionId == board.user_id || managerCount > 0 || auth == 'admin'}">
+                    <td><button th:onclick="|deleteBoard(${board.board_no})|">삭제</button></td>
+                </div>
+            </th:block>
+            <th:block th:unless="${board.notice_yn == 'N'}">
+                <div th:if="${sessionId == board.user_id || auth == 'admin'}">
+                    <td><button th:onclick="|deleteBoard(${board.board_no})|">삭제</button></td>
+                </div>
+            </th:block>
+        </tr>
+        <th:block th:if="${#lists.size(boardList) < 1}">
+            <tr>
+                <td colspan="6" style="background-color: lightgrey;">게시글이 없습니다.</td>
+            </tr>
+        </th:block>
+    </tbody>
+</th:block>
 </body>
 </html>

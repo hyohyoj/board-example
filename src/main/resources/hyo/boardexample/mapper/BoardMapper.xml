@@ -6,15 +6,15 @@
     <sql id="search">
         <choose>
             <when test="keyword == 'user_id'.toString()">
-                AND user_id LIKE CONCAT('%',#{searchContent},'%')
+                AND user_id LIKE CONCAT(#{searchContent},'%')
                 AND target IS NULL
             </when>
             <when test="keyword == 'board_title'.toString()">
-                AND board_title LIKE CONCAT('%',#{searchContent},'%')
+                AND board_title LIKE CONCAT(#{searchContent},'%')
                 AND target IS NULL
             </when>
             <otherwise>
-                AND board_content LIKE CONCAT('%',#{searchContent},'%')
+                AND board_content LIKE CONCAT(#{searchContent},'%')
                 AND target IS NULL
             </otherwise>
         </choose>
@@ -22,7 +22,7 @@
     </sql>
 
     <select id="boardCount" parameterType="hyo.boardexample.domain.Board" resultType="int">
-        SELECT count(board_no) AS cnt FROM board
+        SELECT count(*) AS cnt FROM board
         WHERE delete_yn = 'N'
         <if test="searchContent != null">
             <include refid="search"></include>
@@ -50,9 +50,10 @@
         <if test="type_no != null">
             AND type_no = #{type_no}
         </if>
+        order by board_no
         <choose>
             <when test="page != null">
-                LIMIT #{page}, 10
+                LIMIT #{limitPage}, 10
             </when>
             <otherwise>
                 LIMIT 0, 10

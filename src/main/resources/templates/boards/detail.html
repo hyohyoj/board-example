@@ -48,6 +48,7 @@
     let boardContent = $("#content").val();
     let sessionId = $("#sessionId").val();
     let fileHtml = $("#fileModifyDiv").html();
+    let typeValue = $("#typeValue").val();
 
     // 관리자 권한 및 작성자인 경우에만 수정 가능
     if(!/*[[ ${validation} ]]*/) {
@@ -59,6 +60,7 @@
 
       let status = $("#modify").text();
       let changedContent = $("#content").val();
+      let changedTypeValue = $("#typeValue").val();
 
       if(status == "수정") {
         $("#cancel").show();
@@ -73,6 +75,18 @@
       }
       else if(status == "완료") {
 
+        // 공백 체크
+        if(changedContent == '') {
+            alert('내용을 작성해주세요.');
+            $("#content").focus();
+            return false;
+        }
+
+        let typeNo = changedTypeValue.split(',')[0];
+        let kind = changedTypeValue.split(',')[1];
+
+        $("#type_no").val(typeNo);
+
         let file = $("#boardFileInsertForm")[0];
         let formData = new FormData(file);
         formData.append('files', file);
@@ -86,10 +100,49 @@
             'board_no' : boardNum,
             'board_content' : changedContent,
             'changeYn' : $("#changeYn").val(),
-            'fileNumList' : fileNumList
+            'fileNumList' : fileNumList,
+            'type_no' : typeNo
         }
         formData.append('board', new Blob([JSON.stringify(data)], {type: 'application/json'}));
 
+        // 갤러리 타입은 사진 첨부가 필수여서 한 번 체크 해줌
+        if(kind == 'gallery') {
+            galleryCheck(formData);
+        } else {
+            updateBoard(formData)
+        }
+      }
+
+    });
+
+    function galleryCheck(formData) {
+          $.ajax({
+              type : "POST",
+              url : "/board/imageCheck",
+              dataType:"text",
+              enctype: 'multipart/form-data',
+              data : formData,
+              contentType: false,
+              processData: false,
+              cache: false,
+              success : function(data){
+                    if(data == '성공') {
+                      updateBoard(formData);
+                    } else {
+                      alert('갤러리 게시판은 사진 첨부가 필수입니다.');
+                    }
+              },
+              error : function(request,status,error) {
+                    if(status == '500') {
+                        alert('에러가 발생했습니다.');
+                    } else {
+                        alert('파일 사이즈가 너무 큽니다.');
+                    }
+                }
+          });
+    }
+
+    function updateBoard(formData) {
         $.ajax({
                 type : "POST",
                 url : "/board/update",
@@ -126,9 +179,7 @@
                     }
                 }
         });
-      }
-
-    });
+    }
 
     $("#cancel").on("click", function() {
       $("#cancel").hide();
@@ -136,6 +187,7 @@
       $("#answerInsert").show();
       $("#content").attr("readonly", true);
       $("#content").val(boardContent);
+      $("#typeValue").val(typeValue);
       $("#answerContent").hide();
       $("#answerContent").val("");
       $("#modify").text("수정");
@@ -262,16 +314,17 @@
     <!--/* 파일이 변경된 경우, 해당 파라미터를 이용하여 파일 삭제 및 재등록 처리 */-->
     <input type="hidden" id="changeYn" name="changeYn" value="N" />
     <input type="hidden" name="board_no" th:value="${boardForm.board_no}" />
+    <input type="hidden" id="type_no" name="type_no" />
 
     <div id="boardTypeDiv" style="display: none;">
-        <label for="type_no">게시판 선택 : </label>
-        <select id="type_no" name="type_no" >
+        <label for="typeValue">게시판 선택 : </label>
+        <select id="typeValue" name="typeValue" >
             <th:block th:each="row, status : ${typeList}">
-                <option th:value="${row.type_no}" th:text="${row.type_name}" th:selected="${#strings.equals(row.type_no, boardForm.type_no)}"></option>
+                <option th:value="|${row.type_no},${row.kind}|" th:text="${row.type_name}" th:selected="${#strings.equals(row.type_no, boardForm.type_no)}"></option>
             </th:block>
         </select>
     </div>
-    <th:block th:if="${#strings.equals(session.loginMember.auth_code, 'admin')}">
+    <th:block th:if="${validation}">
         <div id="noticeYnDiv" style="display: none;">
             <label for="notice_yn">공지사항</label>
             <input type="checkbox" id="notice_yn" name="notice_yn" value="Y" th:checked="${#strings.equals(boardForm.notice_yn, 'Y')}" />

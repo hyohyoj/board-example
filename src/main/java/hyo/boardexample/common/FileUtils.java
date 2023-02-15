@@ -76,6 +76,7 @@ public class FileUtils {
                 fileInfo.setOriginal_name(file.getOriginalFilename());
                 fileInfo.setSave_name(saveName);
                 fileInfo.setSize(file.getSize());
+                fileInfo.setFileExtension(extension);
 
                 if(!file.getOriginalFilename().equals("")) {    // 비어있는 파일명 제외
                     fileList.add(fileInfo);

@@ -113,9 +113,9 @@ table {
                     data : params,
                     success : function(data){
                           // 테이블 초기화
-                          $("#dataTableBody").empty();
+                          $("#dataTable").empty();
 
-                          $("#dataTableBody").html(data);
+                          $("#dataTable").html(data);
                           paging(totalCount, selectedPage, boardType);
                     }
                 });
@@ -271,6 +271,10 @@ table {
                                             + '&searchContent=' + $("#searchInput").val());
     }
 
+    function goToInsertForm() {
+        $(location).attr('href', '/board/insertForm?type_no=' + $("#boardType").val());
+    }
+
     $(document).ready(function () {
 
         let selectKeyword = [[${keyword}]];
@@ -344,8 +348,8 @@ table {
         로그아웃
     </button>
 </form>
-<form th:action="@{/board/insertForm}" method="get">
-    <button onclick="location.href='items.html'" type="submit">
+<form th:action="@{/board/insertForm(type_no = ${type_no})}" method="get" onsubmit="return false;">
+    <button onclick="goToInsertForm();">
         게시글 등록
     </button>
 </form>
@@ -353,9 +357,9 @@ table {
 
 <div id="boardTypeList">
     <ul id="boardTypeUl">
-        <li th:class="${#strings.isEmpty(type_no) ? 'on' : 'off'}">
-            <a href="javascript:void(0);" onclick="typeChange(this);">전체게시판</a>
-        </li>
+<!--        <li th:class="${#strings.isEmpty(type_no) ? 'on' : 'off'}">-->
+<!--            <a href="javascript:void(0);" onclick="typeChange(this);">전체게시판</a>-->
+<!--        </li>-->
         <th:block th:each="row, status : ${typeList}">
             <li th:class="${#strings.equals(type_no, row.type_no) ? 'on' : 'off'}">
                 <a href="javascript:void(0);" th:id="${row.type_no}" onclick="typeChange(this);">
@@ -381,18 +385,7 @@ table {
 
 <br>
 <p id="displayCount"></p>
-<table style="width:500px; text-align:center;">
-    <thead>
-        <tr>
-            <th>번호</th>
-            <th>제목</th>
-            <th>날짜</th>
-            <th>작성자</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody id="dataTableBody">
-    </tbody>
+<table id="dataTable" style="width:600px; text-align:center;">
 </table>
 
 <input type="hidden" id="selectedPage" name="selectedPage" th:value="${selected_page}" />

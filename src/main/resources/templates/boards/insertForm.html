@@ -10,30 +10,79 @@
 <script th:inline="javascript">
   $(document).ready(function () {
 
-    $("#submit").on("click", function() {
+      $("#submit").on("click", function() {
 
-      // file
-<!--      let file = $("#file_0")[0].files[0];-->   // <- input 태그에서 file 정보 얻어오는 법
-<!--      let formData = new FormData();-->
-      let file = $("#boardFileInsertForm")[0];      // <- form에 있는 모든 file 정보 얻어오는 법
-      let formData = new FormData(file);
-      formData.append('files', file);
+          // file
+          <!-- let file = $("#file_0")[0].files[0]; -->   // <- input 태그에서 file 정보 얻어오는 법
+          <!-- let formData = new FormData(); -->
 
-      // board json
-      let userId = $("#user_id").val();
-      let content = $("#board_content").val();
-      let title = $("#board_title").val();
-      let typeNo = $("#type_no").val();
+          let file = $("#boardFileInsertForm")[0];       // <- form에 있는 모든 file 정보 얻어오는 법
+          let formData = new FormData(file);
+          formData.append('files', file);
 
-      let data = {
-              'user_id' : userId,
-              'board_title' : title,
-              'board_content' : content,
-              'type_no' :   typeNo
+          // board json
+          let userId = $("#user_id").val();
+          let content = $("#board_content").val();
+          let title = $("#board_title").val();
+          let typeNo = $("#type_no").val();
+
+          // 공백 체크
+          if(content == '') {
+              alert('내용을 작성해주세요.');
+              $("#board_content").focus();
+              return false;
+          } else if(title == '') {
+              alert('제목을 작성해주세요.');
+              $("#board_title").focus();
+              return false;
+          }
+
+          let data = {
+                  'user_id' : userId,
+                  'board_title' : title,
+                  'board_content' : content,
+                  'type_no' :   typeNo
+          }
+          formData.append('board', new Blob([JSON.stringify(data)], {type: 'application/json'}));
+
+          // 갤러리 타입은 사진 첨부가 필수여서 한 번 체크 해줌
+          if($("#boardKind").val() == 'gallery') {
+              galleryCheck(formData);
+          } else {
+              insertBoard(formData);
+          }
+
+      });
+
+      function galleryCheck(formData) {
+          $.ajax({
+              type : "POST",
+              url : "/board/imageCheck",
+              dataType:"text",
+              enctype: 'multipart/form-data',
+              data : formData,
+              contentType: false,
+              processData: false,
+              cache: false,
+              success : function(data){
+                    if(data == '성공') {
+                      insertBoard(formData);
+                    } else {
+                      alert('갤러리 게시판은 사진 첨부가 필수입니다.');
+                    }
+              },
+              error : function(request,status,error) {
+                    if(status == '500') {
+                        alert('에러가 발생했습니다.');
+                    } else {
+                        alert('파일 사이즈가 너무 큽니다.');
+                    }
+                }
+          });
       }
-      formData.append('board', new Blob([JSON.stringify(data)], {type: 'application/json'}));
 
-      $.ajax({
+      function insertBoard(formData) {
+          $.ajax({
               type : "POST",
               url : "/board/insert",
               dataType:"text",
@@ -58,10 +107,9 @@
                     } else {
                         alert('파일 사이즈가 너무 큽니다.');
                     }
-                }
-      });
-
-    });
+              }
+          });
+      }
 
   })
 
@@ -114,15 +162,16 @@
 <form th:action="@{/board/insert}" th:object="${boardForm}" method="post" enctype="multipart/form-data" id="boardFileInsertForm" onsubmit="return false;">
 
     <div>
-        <label for="type_no">게시판 선택 : </label>
-        <select id="type_no" name="type_no" >
-            <th:block th:each="row, status : ${typeList}">
-                <option th:value="${row.type_no}" th:text="${row.type_name}" th:selected="${status.first}"></option>
+        <label for="type_span">게시판 : </label>
+        <th:block th:each="row, status : ${typeList}">
+            <th:block th:if="${row.type_no == boardForm.type_no}">
+                <span id="type_span" th:text="${row.type_name}"></span>
+                <input type="hidden" id="boardKind" th:value="${row.kind}" />
             </th:block>
-        </select>
+        </th:block>
     </div>
     <br>
-    <th:block th:if="${#strings.equals(session.loginMember.auth_code, 'admin')}">
+    <th:block th:if="${#strings.equals(session.loginMember.auth_code, 'admin') || managerCount > 0}">
         <div>
             <label for="notice_yn">공지사항</label>
             <input type="checkbox" id="notice_yn" name="notice_yn" value="Y" th:checked="${#strings.equals(notice_yn, 'Y')}" />
@@ -153,6 +202,7 @@
     <hr id="btnDiv">
 
     <input type="hidden" id="user_id" name="user_id" th:value="${session.loginMember.user_id}">
+    <input type="hidden" id="type_no" name="type_no" th:value="${boardForm.type_no}" />
 
 </form>
 

@@ -25,14 +25,17 @@ public class Board {
     private LocalDateTime insert_date;
     private Long target = null;
     private Long type_no;
-    private String type_name;
     private String delete_yn;
     private String notice_yn;
+
+    private String type_name;
     private int page;
+    private int limitPage;
     private String keyword;
     private String searchContent;
     private String changeYn;
     private List<Long> fileNumList;
     private String selected_page;
+    private String imageUploadPath;
 
 }

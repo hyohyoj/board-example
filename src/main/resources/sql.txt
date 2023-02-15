@@ -80,18 +80,77 @@ select * from file_table order by file_no desc;
 select * from board_type;
 select * from board order by board_no desc;
 select * from board;
-select * from board where board_no = 23;
+explain select * from board where board_no = 23;
 
-select * from board
-where delete_yn = 'N'
-AND user_id LIKE CONCAT('%','hyo','%')
-AND target IS NULL
-and type_no = 1
-order by insert_date desc
-limit 0, 10;
 
+
+explain select * from board where delete_yn = 'N' and type_no = 2 order by board_no limit 0,10;
+explain select * from board where delete_yn = 'N' and type_no = 4 limit 0,10;
+
+select * from board where delete_yn = 'N' and user_id like concat('hyo', '%') and target is null and type_no =2 limit 0, 10;
+
+explain select count(*) from board where delete_yn = 'N' and type_no = 2 and user_id like concat('hyo', '%') and target is null;
+select count(*) from board where delete_yn = 'N' and type_no = 3 and target is null and board_content like concat('test', '%');
+
+
+explain UPDATE
+            board_type
+        SET
+             type_name = '속도테스트'
+            ,delete_yn = 'Y'
+            ,kind = 'qna'
+        WHERE
+            type_no = 6;
+
+SELECT
+             board_no
+            ,user_id
+            ,board_title
+            ,insert_date
+            ,target
+            ,type_no
+        FROM
+            board
+        WHERE
+            delete_yn = 'N'
+        AND
+            notice_yn = 'Y'
+		AND type_no = 4
+        ORDER BY insert_date DESC
+        LIMIT 3;
+
+select * from board where target is null;
+select count(*) from board where type_no = 1 and delete_yn = 'N';
+
+update board set board_title = '매니저 공지사항' where board_no = 1099589;
+
+update board set type_no = 2 where board_no in (select tmp.board_no from (select board_no from board where type_no = 1 order by board_no desc limit 500000) tmp);
 
 select * from board where delete_yn = 'N' and notice_yn = 'Y' order by insert_date desc limit 3;
+
+explain select count(*) from board where delete_yn = 'N' and type_no = 1  and target is null;
+
+SELECT *
+        FROM board
+        WHERE type_no = 4 and delete_yn = 'N';
+
+SELECT
+             board_no
+            ,user_id
+            ,board_title
+            ,board_content
+            ,insert_date
+            ,type_no
+            ,notice_yn
+        FROM board
+        WHERE board_no = 1;
+
+explain SELECT
+             user_id
+            ,board_content
+            ,insert_date
+        FROM board
+        WHERE target = 1;
 
 select
 	c.board_no,
@@ -107,7 +166,7 @@ union all
 (select * from board where delete_yn = 'N' limit 10,10)
 ) c;
 
-select a.* from board a where a.delete_yn = 'N' and notice_yn = 'Y'
+explain select a.* from board a where a.delete_yn = 'N' and notice_yn = 'Y';
 union all
 select b.* from board b where b.delete_yn = 'N' limit 10,10;
 

@@ -77,6 +77,41 @@ public class BoardController {
 //        return jo.toString();
 //    }
 
+    /* 게시글 리스트에 이미지 경로 지정해주는 함수 */
+    public List<Board> setImageUploadPath(List<Board> boardList) {
+        List<FileInfo> fileList = null;
+
+        String extension = "";
+        String uploadDate = "";
+        String uploadPath = "";
+
+        for (Board board : boardList) {
+            // 게시글의 첨부 파일 모두 가져옴
+            fileList = fileInfoService.selectFileList(board.getBoard_no().intValue());
+
+            for (FileInfo file : fileList) {
+                // 파일 확장자 체크
+                extension = FilenameUtils.getExtension(file.getOriginal_name());
+
+                // 파일이 이미지인 경우
+                if(extension.equals("jpg") || extension.equals("png")) {
+                    // 파일 저장 경로 찾기
+                    uploadDate = file.getInsert_time().format(DateTimeFormatter.ofPattern("yyMMdd"));
+                    uploadPath = Paths.get("board","image", uploadDate, file.getSave_name()).toString();
+
+                    board.setImageUploadPath(uploadPath);
+                    break;
+                } else {
+                    // 이미지가 없는 경우 임시 이미지 출력
+                    uploadPath = "../images/thumbnail.png";
+                    board.setImageUploadPath(uploadPath);
+                }
+            }
+        }   // end of for
+
+        return boardList;
+    }
+
     // ModelAndView 형태로 데이터가 세팅 된 뷰를 반환
     @GetMapping("/selectList")
     @ResponseBody
@@ -92,24 +127,44 @@ public class BoardController {
 
         List<Board> boardList = null;
         List<Board> boardNoticeList = null;
+        List<FileInfo> fileList = null;
+        BoardType boardType = null;
+        int boardCount = 0;
+
         ModelAndView mv = new ModelAndView();
 
-        boardModel.setPage((boardModel.getPage()-1) * 10);
+        String extension = "";
+        String uploadDate = "";
+        String uploadPath = "";
+
+        boardModel.setLimitPage((boardModel.getPage()-1) * 10);
 
         // 유저 아이디 보내서 권한 테이블 조회
         managerCount = userAuthService.getUserAuthManage(userAuth);
 
         try{
             boardList = boardService.boardList(boardModel);
+            boardCount = boardService.boardCount(boardModel);
+            boardType = boardTypeService.getBoardType(boardModel.getType_no());
             boardNoticeList = boardService.boardNoticeList(boardModel);
+            
+            // 갤러리 타입일 경우 게시글 목록에 표시할 이미지 불러옴
+            if(boardType.getKind().equals("gallery")) {
+                boardList = setImageUploadPath(boardList);
+                boardNoticeList = setImageUploadPath(boardNoticeList);
+            }
 
             mv.setViewName("/boards/setSelectList");
-            mv.addObject("boardList", boardList);
-            mv.addObject("boardNoticeList", boardNoticeList);
-            mv.addObject("sessionId", loginMember.getUser_id());
-            mv.addObject("auth", loginMember.getAuth_code());
-            mv.addObject("managerCount", managerCount);
+            mv.addObject("boardList", boardList);                   // 게시글 목록
+            mv.addObject("boardNoticeList", boardNoticeList);       // 공지사항 목록
+            mv.addObject("sessionId", loginMember.getUser_id());    // 세션 아이디
+            mv.addObject("auth", loginMember.getAuth_code());       // 세션 권한
+            mv.addObject("managerCount", managerCount);             // 매니저 권한 여부
+            mv.addObject("boardCount", boardCount);                 // 총 게시글 수
+            mv.addObject("boardKind", boardType.getKind());         // 게시글 타입(gallery, qna)
+            mv.addObject("boardPage", boardModel.getPage());        // 현재 페이지
         } catch (Exception e) {
+            System.out.println(e + " : 에러 발생");
             mv.setViewName("/error");
             return mv;
         }
@@ -129,6 +184,7 @@ public class BoardController {
             mv.addObject("typeList", boardTypeList);
             mv.addObject("auth", auth);
         } catch (Exception e) {
+            System.out.println(e + " : 에러 발생");
             mv.setViewName("/error");
             return mv;
         }
@@ -152,17 +208,30 @@ public class BoardController {
             boardList = boardService.boardAnswerList(num);
             jo.put("boardAnswerList", boardList);
         } catch (Exception e) {
+            System.out.println(e + " : 에러 발생");
             return "/error";
         }
         return jo.toString();
     }
 
     @GetMapping("/insertForm")
-    public String insertForm(Model model) {
+    public String insertForm(Model model,
+                             @RequestParam(value="type_no", defaultValue = "")Long typeNo,
+                             @SessionAttribute(name = SessionConstants.LOGIN_MEMBER, required = false) Login loginMember)
+    {
         List<BoardType> boardTypeList = boardTypeService.getBoardTypeList("user");
 
-        model.addAttribute("boardForm", new Board());
+        Board board = new Board();
+        board.setType_no(typeNo);
+
+        UserAuth userAuth = new UserAuth();
+        userAuth.setUser_id(loginMember.getUser_id());
+        userAuth.setType_no(typeNo);
+        int managerCount = userAuthService.getUserAuthManage(userAuth);
+
+        model.addAttribute("boardForm", board);
         model.addAttribute("typeList", boardTypeList);
+        model.addAttribute("managerCount", managerCount);
         return "/boards/insertForm";
     }
 
@@ -196,6 +265,28 @@ public class BoardController {
             }
         }
 
+        return result;
+    }
+
+    /* 갤러리 게시판 사진 첨부 필수 체크 */
+    @PostMapping("/imageCheck")
+    @ResponseBody
+    public String imageCheck(@RequestPart(value="files", required = false) MultipartFile[] files,
+                             @RequestPart(value="board") Board board) throws IOException
+    {
+        String result = "실패";
+
+        // 해당 게시글 사진파일 첨부 여부 체크
+        List<FileInfo> fileList = fileUtils.uploadFiles(files, board.getType_no());
+        // 첨부한 파일이 존재하며
+        if(!CollectionUtils.isEmpty(fileList)) {
+            for (FileInfo file : fileList) {
+                // 파일이 이미지일 경우 성공
+                if(file.getFileExtension().equals("jpg") || file.getFileExtension().equals("png")) {
+                    result = "성공";
+                }
+            }
+        }
         return result;
     }
 

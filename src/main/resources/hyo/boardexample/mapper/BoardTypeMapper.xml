@@ -27,7 +27,6 @@
             ,insert_date
             ,delete_yn
             ,kind
-
         FROM
             board_type
         WHERE

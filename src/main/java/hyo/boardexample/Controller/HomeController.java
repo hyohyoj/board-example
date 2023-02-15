@@ -46,7 +46,11 @@ public class HomeController {
         model.addAttribute("member", loginMember);
         model.addAttribute("typeList", boardTypeList);
         // 페이지 값 유지
-        model.addAttribute("type_no", board.getType_no());
+        if(board.getType_no() == null) {
+            model.addAttribute("type_no", boardTypeList.get(0).getType_no());
+        } else {
+            model.addAttribute("type_no", board.getType_no());
+        }
         model.addAttribute("selected_page", board.getSelected_page());
         model.addAttribute("keyword", board.getKeyword());
         model.addAttribute("searchContent", board.getSearchContent());

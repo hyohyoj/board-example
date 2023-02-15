@@ -20,4 +20,5 @@ public class FileInfo {
     private String delete_yn;
     private LocalDateTime insert_time;
     private LocalDateTime delete_time;
+    private String fileExtension;
 }

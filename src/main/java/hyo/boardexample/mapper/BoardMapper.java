@@ -14,15 +14,23 @@ public interface BoardMapper {
 
     List<Board> getNoticeList(Board board);
 
-    List<Board> getAnswerList(Integer num);
+    List<Board> getAnswerList(Board board);
 
     Board getOne(Integer num);
 
     int update(Board board);
 
+    int updateReply(Board board);
+
     int insert(Board board);
 
     int delete(Board board);
+
+    Board getBoardReplyInfo(Board board);
+
+    int updateBoardReSeq(Board board);
+
+    Long getBoardReRef();
 
     int deleteAnswer(Board board);
 

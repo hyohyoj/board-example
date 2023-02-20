@@ -29,8 +29,8 @@ public class BoardService {
         return boardMapper.getNoticeList(board);
     }
 
-    public List<Board> boardAnswerList(Integer num) {
-        return boardMapper.getAnswerList(num);
+    public List<Board> boardAnswerList(Board board) {
+        return boardMapper.getAnswerList(board);
     }
 
     public Board boardOne(Integer num) {
@@ -41,12 +41,28 @@ public class BoardService {
         return boardMapper.update(board);
     }
 
+    public int updateReply(Board board) {
+        return boardMapper.updateReply(board);
+    }
+
     public int insert(Board board) {
         return boardMapper.insert(board);
     }
 
     public int delete(Board board) {
         return boardMapper.delete(board);
+    }
+
+    public Board getBoardReplyInfo(Board board) {
+        return boardMapper.getBoardReplyInfo(board);
+    }
+
+    public int updateBoardReSeq(Board board) {
+        return boardMapper.updateBoardReSeq(board);
+    }
+
+    public Long getBoardReRef() {
+        return boardMapper.getBoardReRef();
     }
 
     public int deleteAnswer(Board board) {

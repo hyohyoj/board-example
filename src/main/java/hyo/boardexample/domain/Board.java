@@ -27,6 +27,10 @@ public class Board {
     private Long type_no;
     private String delete_yn;
     private String notice_yn;
+    private Long board_re_ref;
+    private Long board_re_lev;
+    private Long board_re_seq;
+
 
     private String type_name;
     private int page;
@@ -37,5 +41,6 @@ public class Board {
     private List<Long> fileNumList;
     private String selected_page;
     private String imageUploadPath;
+    private int new_board_re_ref;
 
 }

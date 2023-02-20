@@ -197,22 +197,22 @@ public class BoardController {
         return boardService.boardCount(boardModel);
     }
 
-    @GetMapping("/selectAnswerList")
-    @ResponseBody
-    public String selectAnswerList(@RequestParam(value="boardNum") Integer num) {
-
-        List<Board> boardList = null;
-        JSONObject jo = new JSONObject();
-
-        try{
-            boardList = boardService.boardAnswerList(num);
-            jo.put("boardAnswerList", boardList);
-        } catch (Exception e) {
-            System.out.println(e + " : 에러 발생");
-            return "/error";
-        }
-        return jo.toString();
-    }
+//    @GetMapping("/selectAnswerList")
+//    @ResponseBody
+//    public String selectAnswerList(@RequestParam(value="boardNum") Integer num) {
+//
+//        List<Board> boardList = null;
+//        JSONObject jo = new JSONObject();
+//
+//        try{
+//            boardList = boardService.boardAnswerList(num);
+//            jo.put("boardAnswerList", boardList);
+//        } catch (Exception e) {
+//            System.out.println(e + " : 에러 발생");
+//            return "/error";
+//        }
+//        return jo.toString();
+//    }
 
     @GetMapping("/insertForm")
     public String insertForm(Model model,
@@ -246,6 +246,8 @@ public class BoardController {
 
         String result = "실패";
 
+        Long boardReRef = boardService.getBoardReRef();
+        board.setBoard_re_ref(boardReRef);
         int success = boardService.insert(board);
 
         if(success >= 1) {
@@ -276,6 +278,11 @@ public class BoardController {
     {
         String result = "실패";
 
+        // 첨부파일에 변화가 없을 경우
+        if(board.getChangeYn().equals("N")) {
+            result = "성공";
+        }
+
         // 해당 게시글 사진파일 첨부 여부 체크
         List<FileInfo> fileList = fileUtils.uploadFiles(files, board.getType_no());
         // 첨부한 파일이 존재하며
@@ -293,6 +300,16 @@ public class BoardController {
     @PostMapping("/insertAnswer")
     @ResponseBody
     public int insertAnswer(@ModelAttribute Board board) {
+
+        Board boardReplyInfo = boardService.getBoardReplyInfo(board);
+
+        board.setBoard_re_ref(boardReplyInfo.getBoard_re_ref());
+        board.setBoard_re_lev(boardReplyInfo.getBoard_re_lev());
+        board.setBoard_re_seq(boardReplyInfo.getBoard_re_seq());
+
+        // 게시글 답글을 등록할 때 기존에 등록된 답글의 순서를 증가시키는 쿼리 추가
+        boardService.updateBoardReSeq(board);
+
         return boardService.insert(board);
     }
 
@@ -307,8 +324,10 @@ public class BoardController {
         board = (Board) multipartHttpServletRequest.getAttribute("board");
 
         int result = 0;
+        int success = 0;
 
-        int success = boardService.update(board);
+        success += boardService.update(board);
+        success += boardService.updateReply(board);
 
         if(success >= 1) {
             result++;
@@ -396,7 +415,7 @@ public class BoardController {
             HttpServletRequest request)
     {
         Board boardForm = boardService.boardOne(num);
-        List<Board> answerList = boardService.boardAnswerList(num);
+        List<Board> answerList = boardService.boardAnswerList(boardForm);
         List<FileInfo> fileList = fileInfoService.selectFileList(num);
         String boardKind = boardService.getKind(num);
         List<BoardType> boardTypeList = boardTypeService.getBoardTypeList("user");

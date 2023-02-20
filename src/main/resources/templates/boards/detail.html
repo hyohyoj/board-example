@@ -116,6 +116,11 @@
     });
 
     function galleryCheck(formData) {
+
+          let fileArray = $("input[name=fileText]").get();
+          let fileExtension;
+          let imageCount = 0;
+
           $.ajax({
               type : "POST",
               url : "/board/imageCheck",
@@ -129,7 +134,20 @@
                     if(data == '성공') {
                       updateBoard(formData);
                     } else {
-                      alert('갤러리 게시판은 사진 첨부가 필수입니다.');
+                        for(var i = 0; i < fileArray.length; i++) {
+                              fileExtension = fileArray[i].value.split('.')[1];
+
+                              if(fileExtension == 'jpg' || fileExtension == 'png') {
+                                  imageCount++;
+                              }
+                        }
+
+                        if(imageCount > 0) {
+                            updateBoard(formData);
+                        } else {
+                            alert('갤러리 게시판은 사진 첨부가 필수입니다.');
+                            return false;
+                        }
                     }
               },
               error : function(request,status,error) {
@@ -206,6 +224,7 @@
     $("#answerInsert").on("click", function() {
 
       let status = $("#answerInsert").text();
+      let typeNo = typeValue.split(',')[0];
 
       if(status == "답변하기") {
         $("#cancel").show();
@@ -223,8 +242,11 @@
                 dataType:"text",
                 data : {
                         'user_id' : sessionId,
+                        'board_title' : 'ㄴRe:' + $("#boardTitle").text(),
                         'board_content' : $("#answerContent").val(),
-                        'target' : boardNum
+                        'target' : boardNum,
+                        'type_no' : typeNo,
+                        'board_no' : boardNum
                 },
                 success : function(data){
                       console.log(data);
@@ -233,6 +255,12 @@
                         //alert('답변을 작성하였습니다.');
                         location.reload();
                       }
+                }
+                ,beforeSend : function() {
+                    $('.wrap-loading').removeClass('display-none');
+                }
+                ,complete : function() {
+                    $('.wrap-loading').addClass('display-none');
                 }
         });
       }
@@ -258,7 +286,7 @@
             <div data-name="fileDiv">
                 <label for="file_${fileIdx}"></label>
                 <div>
-                    <input type="text" style="display: inline-block; width: 350px; height: 30px;" value="파일 찾기" readonly />
+                    <input type="text" name="fileText" style="display: inline-block; width: 350px; height: 30px;" value="파일 찾기" readonly />
                     <label for="file_${fileIdx}" class="labelStyle">파일 선택</label>
                     <input type="file" name="files" id="file_${fileIdx}" style="display: none;" onchange="changeFileName(this)" />
                     <button type="button" onclick="removeFile(this)">-</button>
@@ -324,6 +352,7 @@
             </th:block>
         </select>
     </div>
+
     <th:block th:if="${validation}">
         <div id="noticeYnDiv" style="display: none;">
             <label for="notice_yn">공지사항</label>
@@ -343,7 +372,7 @@
         <tbody id="dataTableBody">
             <tr>
                 <td id="boardNum" th:text="${boardForm.board_no}">번호 부분</td>
-                <td th:utext="${boardForm.board_title}">제목 부분</td>
+                <td id="boardTitle" th:utext="${boardForm.board_title}">제목 부분</td>
                 <td th:text="${#strings.arraySplit(boardForm.insert_date, 'T')[0] + ' ' + #strings.arraySplit(boardForm.insert_date, 'T')[1]}">날짜 부분</td>
                 <td id="boardUser" th:text="${boardForm.user_id}">작성자 부분</td>
             </tr>
@@ -393,7 +422,7 @@
             <label th:for="|file_${status.index}|"></label>
             <div>
                 <input type="hidden" name="fileNo" th:value="${row.file_no}" />
-                <input type="text" style="display: inline-block; width: 350px; height: 30px;" th:value="${row.original_name}" readonly />
+                <input type="text" name="fileText" style="display: inline-block; width: 350px; height: 30px;" th:value="${row.original_name}" readonly />
                 <label th:for="|file_${status.index}|" class="labelStyle">파일 선택</label>
                 <input type="file" name="files" th:id="|file_${status.index}|" style="display: none;" onchange="changeFileName(this)"/>
                 <button th:if="${status.first}" type="button" onclick="addFile()">+</button>
@@ -405,7 +434,10 @@
 </form>
 
 <br>
+<th:block th:if="${boardForm.board_re_lev == 0}">
+<!-- 답변일 경우 수정 불가 -->
 <button id="modify">수정</button>
+</th:block>
 <button style="display: none;" id="cancel">취소</button>
 
 <th:block th:if="${not #strings.equals(boardKind, 'gallery')}">

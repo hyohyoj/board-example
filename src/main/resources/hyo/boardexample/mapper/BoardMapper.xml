@@ -7,15 +7,12 @@
         <choose>
             <when test="keyword == 'user_id'.toString()">
                 AND user_id LIKE CONCAT(#{searchContent},'%')
-                AND target IS NULL
             </when>
             <when test="keyword == 'board_title'.toString()">
                 AND board_title LIKE CONCAT(#{searchContent},'%')
-                AND target IS NULL
             </when>
             <otherwise>
                 AND board_content LIKE CONCAT(#{searchContent},'%')
-                AND target IS NULL
             </otherwise>
         </choose>
 
@@ -42,6 +39,9 @@
             ,target
             ,type_no
             ,notice_yn
+            ,board_re_ref
+            ,board_re_lev
+            ,board_re_seq
         FROM board
         WHERE delete_yn = 'N'
         <if test="searchContent != null">
@@ -50,7 +50,7 @@
         <if test="type_no != null">
             AND type_no = #{type_no}
         </if>
-        order by board_no
+        ORDER BY board_re_ref DESC, board_re_seq ASC
         <choose>
             <when test="page != null">
                 LIMIT #{limitPage}, 10
@@ -83,13 +83,18 @@
         LIMIT 3
     </select>
 
-    <select id="getAnswerList" parameterType="Integer" resultType="hyo.boardexample.domain.Board">
+    <select id="getAnswerList" parameterType="hyo.boardexample.domain.Board" resultType="hyo.boardexample.domain.Board">
         SELECT
              user_id
             ,board_content
             ,insert_date
-        FROM board
-        WHERE target = #{num}
+        FROM
+            board
+        WHERE
+            target = #{board_no}
+<!--            board_re_ref = #{board_re_ref}-->
+<!--        AND-->
+<!--            board_re_lev = #{board_re_lev} + 1-->
     </select>
 
     <select id="getOne" parameterType="Integer" resultType="hyo.boardexample.domain.Board">
@@ -101,6 +106,9 @@
             ,insert_date
             ,type_no
             ,notice_yn
+            ,board_re_ref
+            ,board_re_lev
+            ,board_re_seq
         FROM board
         WHERE board_no = #{num}
     </select>
@@ -133,6 +141,15 @@
             board_no = #{board_no}
     </update>
 
+    <update id="updateReply" parameterType="hyo.boardexample.domain.Board">
+        UPDATE
+            board
+        SET
+            type_no = #{type_no}
+        WHERE
+            target = #{board_no}
+    </update>
+
     <update id="modifyBoardYn" parameterType="hyo.boardexample.domain.Board">
         UPDATE
             board
@@ -143,19 +160,35 @@
     </update>
 
     <insert id="insert" parameterType="hyo.boardexample.domain.Board" useGeneratedKeys="true" keyProperty="board_no">
+<!--        <selectKey resultType="int" keyProperty="new_board_re_ref" order="BEFORE">-->
+<!--            SELECT IFNULL(MAX(board_re_ref), 0) + 1-->
+<!--            FROM board-->
+<!--        </selectKey>-->
         <choose>
+            <!-- 댓글 -->
             <when test="target != null">
                 INSERT INTO board(
-                     board_content
+                     board_title
+                    ,board_content
                     ,user_id
                     ,target
+                    ,type_no
+                    ,board_re_ref
+                    ,board_re_lev
+                    ,board_re_seq
                 )
                 VALUES(
-                     #{board_content}
+                     #{board_title}
+                    ,#{board_content}
                     ,#{user_id}
                     ,#{target}
+                    ,#{type_no}
+                    ,#{board_re_ref}
+                    ,#{board_re_lev} + 1
+                    ,#{board_re_seq} + 1
                 )
             </when>
+            <!-- 게시글 -->
             <otherwise>
                 INSERT INTO board(
                      board_title
@@ -163,6 +196,9 @@
                     ,user_id
                     ,type_no
                     ,notice_yn
+                    ,board_re_ref
+                    ,board_re_lev
+                    ,board_re_seq
                 )
                 VALUES(
                      #{board_title}
@@ -177,10 +213,41 @@
                             ,'N'
                         </otherwise>
                     </choose>
+                    ,#{board_re_ref}
+                    ,0
+                    ,0
                 )
             </otherwise>
         </choose>
     </insert>
+
+    <select id="getBoardReRef" resultType="Long">
+        SELECT IFNULL(MAX(board_re_ref), 0) + 1 AS board_re_ref
+        FROM board
+    </select>
+
+    <select id="getBoardReplyInfo" parameterType="hyo.boardexample.domain.Board" resultType="hyo.boardexample.domain.Board">
+        SELECT
+             board_no
+            ,board_re_ref
+            ,board_re_lev
+            ,board_re_seq
+        FROM
+            board
+        WHERE
+            board_no = #{board_no}
+    </select>
+
+    <update id="updateBoardReSeq" parameterType="hyo.boardexample.domain.Board">
+        UPDATE
+            board
+        SET
+            board_re_seq = board_re_seq + 1
+        WHERE
+            board_re_ref = #{board_re_ref}
+        AND
+            board_re_seq > #{board_re_seq}
+    </update>
 
     <delete id="delete" parameterType="hyo.boardexample.domain.Board">
         DELETE FROM board

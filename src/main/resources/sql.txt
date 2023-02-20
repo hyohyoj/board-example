@@ -18,6 +18,9 @@ alter table board add column type_no int default null;
 alter table board add foreign key(type_no) references board_type(type_no);
 alter table board add column delete_yn char(1) not null default 'N';
 alter table board add column notice_yn char(1) not null default 'N';
+alter table board add column board_re_ref int default 0;
+alter table board add column board_re_lev int default 0;
+alter table board add column board_re_seq int default 0;
 
 create table file_table (
 	file_no int not null auto_increment primary key,
@@ -82,12 +85,71 @@ select * from board order by board_no desc;
 select * from board;
 explain select * from board where board_no = 23;
 
+delete from board where board_no = 1099598;
+delete from file_table where file_no = 54;
 
+explain SELECT
+             board_no
+            ,user_id
+            ,board_title
+            ,board_content
+            ,insert_date
+            ,target
+            ,type_no
+            ,notice_yn
+            ,board_re_ref
+            ,board_re_lev
+            ,board_re_seq
+        FROM board
+        WHERE delete_yn = 'N'
+		AND type_no = 3
+        order by board_re_ref desc, board_re_seq asc
+		LIMIT 0, 10;
+
+       explain SELECT
+            *
+        FROM board
+        WHERE target = 1099610;
+
+        select * from board order by board_no desc;
+        select * from board where board_no = 254004 or target = 254004;
+        update board set board_re_ref = 4 where board_no = 254004 or target = 254004;
+
+        delete from board where type_no = 3;
+
+SELECT
+             board_no
+            ,board_re_ref
+            ,board_re_lev
+            ,board_re_seq
+        FROM
+            board
+        WHERE
+            board_no = 1099606;
+
+update board set board_title = 'Re:test1' where target = 1;
+
+select * from (
+select * from board
+union
+select * from board where target in (
+select board_no from board where type_no = 1 and delete_yn = 'N' order by board_no) order by target) b
+order by b.target, b.board_no
+;
+
+SELECT IFNULL(MAX(board_re_ref), 0) + 1 as board_re_ref
+        FROM board;
 
 explain select * from board where delete_yn = 'N' and type_no = 2 order by board_no limit 0,10;
-explain select * from board where delete_yn = 'N' and type_no = 4 limit 0,10;
+select * from board where delete_yn = 'N' and type_no = 4 limit 0,10;
+explain SELECT
+             user_id
+            ,board_content
+            ,insert_date
+        FROM board
+        WHERE target = 1;
 
-select * from board where delete_yn = 'N' and user_id like concat('hyo', '%') and target is null and type_no =2 limit 0, 10;
+explain select * from board where delete_yn = 'N' and user_id like concat('hyo', '%') and target is null and type_no =2 limit 0, 10;
 
 explain select count(*) from board where delete_yn = 'N' and type_no = 2 and user_id like concat('hyo', '%') and target is null;
 select count(*) from board where delete_yn = 'N' and type_no = 3 and target is null and board_content like concat('test', '%');

@@ -52,15 +52,13 @@ public class XssFilter implements Filter {
 
         if(uri.equals("/board/insert")) {
             board_title = multipartRequest.getParameter("board_title");
-            type_no = multipartRequest.getParameter("type_no");
             user_id = multipartRequest.getParameter("user_id");
-            notice_yn = multipartRequest.getParameter("notice_yn");
         } else if(uri.equals("/board/update")) {
             board_no = multipartRequest.getParameter("board_no");
-            type_no = multipartRequest.getParameter("type_no");
-            changeYn = multipartRequest.getParameter("changeYn");
-            notice_yn = multipartRequest.getParameter("notice_yn");
         }
+        type_no = multipartRequest.getParameter("type_no");
+        changeYn = multipartRequest.getParameter("changeYn");
+        notice_yn = multipartRequest.getParameter("notice_yn");
         board_content = multipartRequest.getParameter("board_content");
 
         try {

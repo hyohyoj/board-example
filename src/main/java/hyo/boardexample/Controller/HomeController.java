@@ -33,6 +33,7 @@ public class HomeController {
     @GetMapping("/")
     public String home(@SessionAttribute(name = SessionConstants.LOGIN_MEMBER, required = false) Login loginMember,
                        @ModelAttribute Board board,
+                       @RequestParam(value = "mode", defaultValue = "text", required = false) String mode,
                        Model model)
     {
         // 세션에 회원 데이터가 없으면 홈으로 이동
@@ -41,16 +42,20 @@ public class HomeController {
         }
 
         List<BoardType> boardTypeList = boardTypeService.getBoardTypeList("user");
+        Long typeNo;
 
         // 세션이 유지되면 로그인 홈으로 이동
         model.addAttribute("member", loginMember);
         model.addAttribute("typeList", boardTypeList);
         // 페이지 값 유지
         if(board.getType_no() == null) {
-            model.addAttribute("type_no", boardTypeList.get(0).getType_no());
+            typeNo = boardTypeList.get(0).getType_no();
         } else {
-            model.addAttribute("type_no", board.getType_no());
+            typeNo = board.getType_no();
         }
+        model.addAttribute("type_no", typeNo);
+        model.addAttribute("mode", mode);
+        model.addAttribute("kind", boardTypeService.getBoardType(typeNo));
         model.addAttribute("selected_page", board.getSelected_page());
         model.addAttribute("keyword", board.getKeyword());
         model.addAttribute("searchContent", board.getSearchContent());

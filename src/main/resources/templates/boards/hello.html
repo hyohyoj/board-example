@@ -76,8 +76,10 @@ table {
 
     function selectList(selectedPage, boardType) {
 
+        let mode = $("#mode").val();
+
         if(typeof selectedPage == 'undefined' || selectedPage == '' ) selectedPage = 1;
-        //if(typeof boardType == 'undefined' || boardType == '' ) boardType = null;
+        if(typeof mode == 'undefined' || mode == '' ) mode = 'text';
 
         console.log("boardType : " + boardType);
 
@@ -85,14 +87,16 @@ table {
         if(searchContent == '') {
             params = {
                 'page' : selectedPage,
-                'type_no' : boardType
+                'type_no' : boardType,
+                'mode' : mode
             }
         } else {
             params = {
                 'page' : selectedPage,
                 'keyword' : keyword,
                 'searchContent' : searchContent,
-                'type_no' : boardType
+                'type_no' : boardType,
+                'mode' : mode
             }
         }
 
@@ -268,11 +272,17 @@ table {
                                             + '&type_no=' + $("#boardType").val()
                                             + '&selected_page=' + $("#selectedPage").val()
                                             + '&keyword=' + $("#searchKeyword").val()
-                                            + '&searchContent=' + $("#searchInput").val());
+                                            + '&searchContent=' + $("#searchInput").val()
+                                            + '&mode=' + $("#mode").val());
     }
 
     function goToInsertForm() {
         $(location).attr('href', '/board/insertForm?type_no=' + $("#boardType").val());
+    }
+
+    function changeGalleryMode(mode) {
+        $("#mode").val(mode);
+        selectList($("#selectedPage").val(), $("#boardType").val());
     }
 
     $(document).ready(function () {
@@ -384,19 +394,22 @@ table {
 </div>
 
 <br>
-<p id="displayCount"></p>
-<table id="dataTable" style="width:600px; text-align:center;">
-</table>
+<p></p>
+<p id="displayCount" style="float:left;"></p>
+
+<div id="dataTable" style="width:700px;">
+</div>
 
 <input type="hidden" id="selectedPage" name="selectedPage" th:value="${selected_page}" />
 <input type="hidden" id="boardType" name="boardType" th:value="${type_no}" />
 <input type="hidden" id="sessionId" th:value="${session.loginMember.user_id}" />
+<input type="hidden" id="mode" th:value="${mode}" />
 
 <ul id="pagingul">
 </ul>
 
 <div class="wrap-loading display-none">
-    <div><img style="width: 50px;" src="./images/loading.gif" /></div>
+    <div><img style="width: 50px;" src="../images/loading.gif" /></div>
 </div>
 
 </body>

@@ -458,7 +458,11 @@
     </div>
 </th:block>
 <br>
-<button th:onclick="|location.href='@{/(type_no = ${type_no}, selected_page = ${selected_page}, keyword = ${keyword}, searchContent = ${searchContent})}'|">목록</button>
+<button th:onclick="|location.href='@{/(type_no = ${type_no}
+                                        ,selected_page = ${selected_page}
+                                        ,keyword = ${keyword}
+                                        ,searchContent = ${searchContent}
+                                        ,mode=${mode})}'|">목록</button>
 
 <div class="wrap-loading display-none">
     <div><img style="width: 50px;" src="../images/loading.gif" /></div>

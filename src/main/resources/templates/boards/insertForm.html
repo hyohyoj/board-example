@@ -41,7 +41,8 @@
                   'user_id' : userId,
                   'board_title' : title,
                   'board_content' : content,
-                  'type_no' :   typeNo
+                  'type_no' :   typeNo,
+                  'changeYn' : 'Y'
           }
           formData.append('board', new Blob([JSON.stringify(data)], {type: 'application/json'}));
 

@@ -84,6 +84,10 @@ public class LoginController {
             return "비밀번호가 일치하지 않습니다.";
         }
 
+        if(loginMember.getDelete_yn().equals("Y")) {
+            return "정지된 아이디입니다. 관리자에게 문의해 주세요.";
+        }
+
         return "성공";
     }
 

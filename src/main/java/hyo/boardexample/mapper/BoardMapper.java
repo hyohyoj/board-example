@@ -4,7 +4,9 @@ import hyo.boardexample.domain.Board;
 import hyo.boardexample.domain.BoardType;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public interface BoardMapper {
@@ -24,15 +26,15 @@ public interface BoardMapper {
 
     int insert(Board board);
 
-    int delete(Board board);
+    int delete(Map<String, Object> map);
 
-    Board getBoardReplyInfo(Board board);
+    Map<String, Object> getBoardReplyInfo(Board board);
 
-    int updateBoardReSeq(Board board);
+    int updateBoardReSeq(Map<String, Object> map);
 
     Long getBoardReRef();
 
-    int deleteAnswer(Board board);
+    int deleteAnswer(Map<String, Object> map);
 
     int modifyBoardYn(Board board);
 

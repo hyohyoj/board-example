@@ -92,9 +92,6 @@
             board
         WHERE
             target = #{board_no}
-<!--            board_re_ref = #{board_re_ref}-->
-<!--        AND-->
-<!--            board_re_lev = #{board_re_lev} + 1-->
     </select>
 
     <select id="getOne" parameterType="Integer" resultType="hyo.boardexample.domain.Board">
@@ -160,10 +157,6 @@
     </update>
 
     <insert id="insert" parameterType="hyo.boardexample.domain.Board" useGeneratedKeys="true" keyProperty="board_no">
-<!--        <selectKey resultType="int" keyProperty="new_board_re_ref" order="BEFORE">-->
-<!--            SELECT IFNULL(MAX(board_re_ref), 0) + 1-->
-<!--            FROM board-->
-<!--        </selectKey>-->
         <choose>
             <!-- 댓글 -->
             <when test="target != null">
@@ -226,7 +219,8 @@
         FROM board
     </select>
 
-    <select id="getBoardReplyInfo" parameterType="hyo.boardexample.domain.Board" resultType="hyo.boardexample.domain.Board">
+    <!-- HashMap 형태 반환 -->
+    <select id="getBoardReplyInfo" parameterType="hyo.boardexample.domain.Board" resultType="hashmap">
         SELECT
              board_no
             ,board_re_ref
@@ -238,23 +232,30 @@
             board_no = #{board_no}
     </select>
 
-    <update id="updateBoardReSeq" parameterType="hyo.boardexample.domain.Board">
+    <!-- HashMap 형태 받아옴 -->
+    <update id="updateBoardReSeq" parameterType="hashmap">
         UPDATE
             board
         SET
             board_re_seq = board_re_seq + 1
         WHERE
-            board_re_ref = #{board_re_ref}
+            board_re_ref = #{boardVo.board_re_ref}
         AND
-            board_re_seq > #{board_re_seq}
+            board_re_seq > #{boardVo.board_re_seq}
     </update>
 
-    <delete id="delete" parameterType="hyo.boardexample.domain.Board">
+    <!-- HashMap 형태 받아옴 -->
+    <delete id="delete" parameterType="hashmap">
         DELETE FROM board
         WHERE board_no = #{board_no}
+        <!-- 부모 게시글일 경우 해당 답글 전부 삭제 -->
+        <if test="board_re_lev == 0 and board_re_seq == 0 and board_re_ref > 0">
+            OR board_re_ref = #{board_re_ref}
+        </if>
     </delete>
 
-    <delete id="deleteAnswer" parameterType="hyo.boardexample.domain.Board">
+    <!-- HashMap 형태 받아옴 -->
+    <delete id="deleteAnswer" parameterType="hashmap">
         DELETE FROM board
         WHERE target =  #{board_no}
     </delete>

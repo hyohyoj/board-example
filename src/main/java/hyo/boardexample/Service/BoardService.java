@@ -9,7 +9,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -49,24 +51,24 @@ public class BoardService {
         return boardMapper.insert(board);
     }
 
-    public int delete(Board board) {
-        return boardMapper.delete(board);
+    public int delete(Map<String, Object> map) {
+        return boardMapper.delete(map);
     }
 
-    public Board getBoardReplyInfo(Board board) {
+    public Map<String, Object> getBoardReplyInfo(Board board) {
         return boardMapper.getBoardReplyInfo(board);
     }
 
-    public int updateBoardReSeq(Board board) {
-        return boardMapper.updateBoardReSeq(board);
+    public int updateBoardReSeq(Map<String, Object> map) {
+        return boardMapper.updateBoardReSeq(map);
     }
 
     public Long getBoardReRef() {
         return boardMapper.getBoardReRef();
     }
 
-    public int deleteAnswer(Board board) {
-        return boardMapper.deleteAnswer(board);
+    public int deleteAnswer(Map<String, Object> map) {
+        return boardMapper.deleteAnswer(map);
     }
 
     public int modifyBoardYn(Board board) {

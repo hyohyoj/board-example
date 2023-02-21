@@ -9,6 +9,7 @@ import hyo.boardexample.common.FileUtils;
 import hyo.boardexample.common.SessionConstants;
 import hyo.boardexample.domain.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.fileupload.FileUploadBase;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -34,10 +35,13 @@ import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.file.Paths;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/board/**")
+@Slf4j
 @RequiredArgsConstructor
 public class BoardController {
 
@@ -53,29 +57,6 @@ public class BoardController {
         System.out.println(e);
         return "/error";
     }
-
-    // json 형태로 데이터 반환
-//    @GetMapping("/selectList")
-//    @ResponseBody
-//    public String selectList(@ModelAttribute Board boardModel) {
-//
-//        List<Board> boardList;
-//        int totalCount;
-//        JSONObject jo = new JSONObject();
-//
-//        boardModel.setPage((boardModel.getPage()-1) * 10);
-//
-//        try {
-//            boardList = boardService.boardList(boardModel);
-//            totalCount = boardService.boardCount(boardModel);
-//
-//            jo.put("boardList", boardList);
-//            jo.put("totalCount", totalCount);
-//        } catch (Exception e) {
-//            return "/error";
-//        }
-//        return jo.toString();
-//    }
 
     /* 게시글 리스트에 이미지 경로 지정해주는 함수 */
     public List<Board> setImageUploadPath(List<Board> boardList) {
@@ -117,9 +98,9 @@ public class BoardController {
     @ResponseBody
     public ModelAndView selectList(
             @ModelAttribute Board boardModel,
-            @SessionAttribute(name = SessionConstants.LOGIN_MEMBER, required = false) Login loginMember
-    ) {
-
+            @SessionAttribute(name = SessionConstants.LOGIN_MEMBER, required = false) Login loginMember,
+            @RequestParam(value = "mode", defaultValue = "text", required = false) String mode)
+    {
         UserAuth userAuth = new UserAuth();
         userAuth.setUser_id(loginMember.getUser_id());
         userAuth.setType_no(boardModel.getType_no());
@@ -131,11 +112,7 @@ public class BoardController {
         BoardType boardType = null;
         int boardCount = 0;
 
-        ModelAndView mv = new ModelAndView();
-
-        String extension = "";
-        String uploadDate = "";
-        String uploadPath = "";
+        ModelAndView mv = new ModelAndView("jsonView"); // json 형태로 데이터 전송
 
         boardModel.setLimitPage((boardModel.getPage()-1) * 10);
 
@@ -147,7 +124,7 @@ public class BoardController {
             boardCount = boardService.boardCount(boardModel);
             boardType = boardTypeService.getBoardType(boardModel.getType_no());
             boardNoticeList = boardService.boardNoticeList(boardModel);
-            
+
             // 갤러리 타입일 경우 게시글 목록에 표시할 이미지 불러옴
             if(boardType.getKind().equals("gallery")) {
                 boardList = setImageUploadPath(boardList);
@@ -163,6 +140,7 @@ public class BoardController {
             mv.addObject("boardCount", boardCount);                 // 총 게시글 수
             mv.addObject("boardKind", boardType.getKind());         // 게시글 타입(gallery, qna)
             mv.addObject("boardPage", boardModel.getPage());        // 현재 페이지
+            mv.addObject("mode", mode);                             // 갤러리 정렬 모드(text, grid)
         } catch (Exception e) {
             System.out.println(e + " : 에러 발생");
             mv.setViewName("/error");
@@ -170,6 +148,57 @@ public class BoardController {
         }
         return mv;
     }
+
+    // json 형태로 데이터 반환
+//    @GetMapping("/selectList")
+//    @ResponseBody
+//    public String selectList(@ModelAttribute Board boardModel,
+//                             @SessionAttribute(name = SessionConstants.LOGIN_MEMBER, required = false) Login loginMember)
+//    {
+//        UserAuth userAuth = new UserAuth();
+//        userAuth.setUser_id(loginMember.getUser_id());
+//        userAuth.setType_no(boardModel.getType_no());
+//        int managerCount = 0;
+//
+//        List<Board> boardList = null;
+//        List<Board> boardNoticeList = null;
+//        List<FileInfo> fileList = null;
+//        BoardType boardType = null;
+//        int boardCount = 0;
+//
+//        JSONObject jo = new JSONObject();
+//
+//        boardModel.setPage((boardModel.getPage()-1) * 10);
+//
+//        // 유저 아이디 보내서 권한 테이블 조회
+//        managerCount = userAuthService.getUserAuthManage(userAuth);
+//
+//        try {
+//            boardList = boardService.boardList(boardModel);
+//            boardCount = boardService.boardCount(boardModel);
+//            boardType = boardTypeService.getBoardType(boardModel.getType_no());
+//            boardNoticeList = boardService.boardNoticeList(boardModel);
+//
+//            // 갤러리 타입일 경우 게시글 목록에 표시할 이미지 불러옴
+//            if(boardType.getKind().equals("gallery")) {
+//                boardList = setImageUploadPath(boardList);
+//                boardNoticeList = setImageUploadPath(boardNoticeList);
+//            }
+//
+//            jo.put("boardList", boardList);                     // 게시글 목록
+//            jo.put("boardNoticeList", boardNoticeList);         // 공지사항 목록
+//            jo.put("sessionId", loginMember.getUser_id());      // 세션 아이디
+//            jo.put("auth", loginMember.getAuth_code());         // 세션 권한
+//            jo.put("managerCount", managerCount);               // 매니저 권한 여부
+//            jo.put("boardCount", boardCount);                   // 총 게시글 수
+//            jo.put("boardKind", boardType.getKind());           // 게시글 타입(gallery, qna)
+//            jo.put("boardPage", boardModel.getPage());          // 현재 페이지
+//        } catch (Exception e) {
+//            System.out.println(e + " : 에러 발생");
+//            return "/error";
+//        }
+//        return jo.toString();
+//    }
 
     @GetMapping("/getBoardType")
     @ResponseBody
@@ -301,14 +330,20 @@ public class BoardController {
     @ResponseBody
     public int insertAnswer(@ModelAttribute Board board) {
 
-        Board boardReplyInfo = boardService.getBoardReplyInfo(board);
+        Map<String, Object> map = new HashMap<>();
 
-        board.setBoard_re_ref(boardReplyInfo.getBoard_re_ref());
-        board.setBoard_re_lev(boardReplyInfo.getBoard_re_lev());
-        board.setBoard_re_seq(boardReplyInfo.getBoard_re_seq());
+        map = boardService.getBoardReplyInfo(board);
+
+        for (String key : map.keySet()) {
+            System.out.println(key + " : " + map.get(key));
+        }
+
+        board.setBoard_re_ref(Long.valueOf(String.valueOf(map.get("board_re_ref"))));
+        board.setBoard_re_lev(Long.valueOf(String.valueOf(map.get("board_re_lev"))));
+        board.setBoard_re_seq(Long.valueOf(String.valueOf(map.get("board_re_seq"))));
 
         // 게시글 답글을 등록할 때 기존에 등록된 답글의 순서를 증가시키는 쿼리 추가
-        boardService.updateBoardReSeq(board);
+        boardService.updateBoardReSeq(map);
 
         return boardService.insert(board);
     }
@@ -364,12 +399,16 @@ public class BoardController {
         Board board = new Board();
         board.setBoard_no(num);
 
+        Map<String, Object> map = new HashMap<>();
+
+        map = boardService.getBoardReplyInfo(board);
+
         // 게시글 답변 삭제
-        boardService.deleteAnswer(board);
+        boardService.deleteAnswer(map);
         // 게시글 첨부 파일 완전 삭제
         fileInfoService.completeDeleteFile(board.getBoard_no());
 
-        return boardService.delete(board);
+        return boardService.delete(map);
     }
 
     @GetMapping("/download")
@@ -409,7 +448,8 @@ public class BoardController {
     @GetMapping("/detail")
     public String detail(
             @ModelAttribute Board board,
-            @RequestParam(value="num") Integer num,
+            @RequestParam(value = "num") Integer num,
+            @RequestParam(value = "mode", defaultValue = "text", required = false) String mode,
             @SessionAttribute(name = SessionConstants.LOGIN_MEMBER, required = false) Login loginMember,
             Model model,
             HttpServletRequest request)
@@ -472,6 +512,7 @@ public class BoardController {
         model.addAttribute("selected_page", board.getSelected_page());
         model.addAttribute("keyword", board.getKeyword());
         model.addAttribute("searchContent", board.getSearchContent());
+        model.addAttribute("mode", mode);
 
         return "/boards/detail";
     }

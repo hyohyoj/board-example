@@ -48,6 +48,7 @@ public class WebConfig implements WebMvcConfigurer {
         return new MappingJackson2HttpMessageConverter(copy);
     }
 
+    // ModelAndView를 json 형식으로 반환해준다
     @Bean
     public MappingJackson2JsonView jsonView() {
         return new MappingJackson2JsonView();

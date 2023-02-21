@@ -5,6 +5,7 @@ create table user_info (
     user_pw varchar(100)
 );
 alter table user_info add column auth_code varchar(50) default null;
+alter table user_info add column delete_yn char(1) not null default 'N';
 
 create table board (
 	board_no int not null auto_increment primary key,
@@ -79,16 +80,20 @@ update board set type_no = 1 where board_no in (1099464,
 
 select * from user_info;
 select * from auth_table;
-select * from file_table order by file_no desc;
+select * from file_table order by board_no desc;
 select * from board_type;
 select * from board order by board_no desc;
 select * from board;
-explain select * from board where board_no = 23;
+select * from board where board_no = 1099563;
 
-delete from board where board_no = 1099598;
+delete from board where board_no = 1099634;
 delete from file_table where file_no = 54;
 
-explain SELECT
+
+select count(*) from board;
+select * from board where board_re_lev > 0;
+
+SELECT
              board_no
             ,user_id
             ,board_title
@@ -102,14 +107,18 @@ explain SELECT
             ,board_re_seq
         FROM board
         WHERE delete_yn = 'N'
-		AND type_no = 3
-        order by board_re_ref desc, board_re_seq asc
+		AND type_no = 1
+        order by board_re_ref desc, board_re_seq
 		LIMIT 0, 10;
+
+        select * from board where board_no = 1099622 or board_re_ref = 9;
+
+        select * from board where board_no in (1099616, 1099619);
 
        explain SELECT
             *
         FROM board
-        WHERE target = 1099610;
+        WHERE target = 1099616, 1099619;
 
         select * from board order by board_no desc;
         select * from board where board_no = 254004 or target = 254004;

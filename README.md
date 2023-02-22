@@ -73,6 +73,11 @@ mybatis
 - ModelAndView -> JSON 형식으로 일부 변경
 - 데이터 100만 건에서 10만 건으로 줄임
 
+#### 2023-02-22
+- 세션 만료 리다이렉트 인터셉터 구현  
+- thymeleaf live reload 설정  
+- 삭제 처리 된 파일을 삭제하는 batch + scheduler 구현  
+
 ---
 ## 부가기능  
 - ~~게시글 검색~~  

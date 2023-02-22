@@ -19,5 +19,9 @@ public interface FileInfoMapper {
 
     int selectFileTotalCount(Long boardNo);
 
-    public int undeleteFile(List<Long> fileNo);
+    int undeleteFile(List<Long> fileNo);
+
+    List<FileInfo> deleteFileList();
+
+    int deleteFileOne(Long fileNo);
 }

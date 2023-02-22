@@ -36,5 +36,12 @@ public class FileInfoService {
         return fileInfoMapper.undeleteFile(file_no);
     }
 
+    public List<FileInfo> deleteFileList() {
+        return fileInfoMapper.deleteFileList();
+    }
+
+    public int deleteFileOne(Long file_no) {
+        return fileInfoMapper.deleteFileOne(file_no);
+    }
 
 }

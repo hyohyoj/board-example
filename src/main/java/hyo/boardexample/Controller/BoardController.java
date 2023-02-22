@@ -48,7 +48,7 @@ public class BoardController {
     private final BoardService boardService;
     private final BoardTypeService boardTypeService;
     private final FileInfoService fileInfoService;
-    private  final UserAuthService userAuthService;
+    private final UserAuthService userAuthService;
     private final FileUtils fileUtils;
 
     //컨트롤러 내에서 발생하는 예외를 모두 처리해준다
@@ -168,7 +168,7 @@ public class BoardController {
 //
 //        JSONObject jo = new JSONObject();
 //
-//        boardModel.setPage((boardModel.getPage()-1) * 10);
+//        boardModel.setLimitPage((boardModel.getPage()-1) * 10);
 //
 //        // 유저 아이디 보내서 권한 테이블 조회
 //        managerCount = userAuthService.getUserAuthManage(userAuth);
@@ -334,9 +334,9 @@ public class BoardController {
 
         map = boardService.getBoardReplyInfo(board);
 
-        for (String key : map.keySet()) {
-            System.out.println(key + " : " + map.get(key));
-        }
+//        for (String key : map.keySet()) {
+//            System.out.println(key + " : " + map.get(key));
+//        }
 
         board.setBoard_re_ref(Long.valueOf(String.valueOf(map.get("board_re_ref"))));
         board.setBoard_re_lev(Long.valueOf(String.valueOf(map.get("board_re_lev"))));

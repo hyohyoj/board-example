@@ -96,4 +96,25 @@
             board_no = #{board_no}
     </select>
 
+    <select id="deleteFileList" resultType="hyo.boardexample.domain.FileInfo">
+        SELECT
+             file_no
+            ,board_no
+            ,original_name
+            ,save_name
+            ,size
+            ,delete_yn
+            ,insert_time
+            ,delete_time
+        FROM
+            file_table
+        WHERE
+            delete_yn = 'Y'
+    </select>
+
+    <delete id="deleteFileOne" parameterType="Long">
+        DELETE FROM file_table
+        WHERE file_no = #{file_no}
+    </delete>
+
 </mapper>

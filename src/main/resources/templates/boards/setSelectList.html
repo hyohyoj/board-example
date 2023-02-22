@@ -37,7 +37,7 @@
                                 &nbsp
                             </th:block>
                         </th:block>
-                        [[${board.board_title}]]
+                        [(${board.board_title})]
                     </td>
                     <td th:onclick="|goToBoard(${board.board_no})|" th:text="${#strings.arraySplit(board.insert_date, 'T')[0] + ' ' + #strings.arraySplit(board.insert_date, 'T')[1]}"></td>
                     <td th:onclick="|goToBoard(${board.board_no})|" th:text="${board.user_id}"></td>

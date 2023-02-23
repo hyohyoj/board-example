@@ -54,10 +54,9 @@ public class LoginController {
         return loginService.dtoTest(login);
     }
 
-    @GetMapping(value = {"/login", "/admin/login"})
+    @GetMapping("/login")
     public String loginForm(Model model, HttpServletRequest request) {
         String path = request.getRequestURI();
-        System.out.println(path);
 
         model.addAttribute("loginForm", new Login());
         model.addAttribute("path", path);

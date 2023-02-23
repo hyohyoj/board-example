@@ -236,24 +236,28 @@
       }
       else if(status == "완료") {
 
-        $.ajax({
-                type : "POST",
-                url : "/board/insertAnswer",
-                dataType:"text",
-                data : {
+        let params = {
                         'user_id' : sessionId,
                         'board_title' : 'ㄴRe:' + $("#boardTitle").text(),
                         'board_content' : $("#answerContent").val(),
                         'target' : boardNum,
                         'type_no' : typeNo,
                         'board_no' : boardNum
-                },
+                }
+
+        // JSON 형식으로 데이터 전송
+        $.ajax({
+                type : "POST",
+                url : "/board/insertAnswer",
+                headers: {'Content-Type': 'application/json'},
+                dataType:"text",
+                data : JSON.stringify(params),
                 success : function(data){
                       console.log(data);
 
                       if(data == "1") {
                         //alert('답변을 작성하였습니다.');
-                        location.reload();
+                        //location.reload();
                       }
                 }
                 ,beforeSend : function() {

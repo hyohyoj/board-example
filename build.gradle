@@ -27,7 +27,7 @@ dependencies {
 	implementation 'javax.servlet:jstl'
 	implementation 'org.json:json:20190722'
 	implementation 'com.googlecode.json-simple:json-simple:1.1.1'
-	//thymeleaf live reload를 위한 devtoos 의존성 주입
+	//thymeleaf live reload를 위한 devtools 의존성 주입
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	//파일 처리
 	implementation 'commons-io:commons-io:2.6'

@@ -76,7 +76,10 @@ mybatis
 #### 2023-02-22
 - 세션 만료 리다이렉트 인터셉터 구현  
 - thymeleaf live reload 설정  
-- 삭제 처리 된 파일을 삭제하는 batch + scheduler 구현  
+- 삭제 처리 된 파일을 삭제하는 batch + scheduler 구현 
+
+#### 2023-02-23  
+- JSON 형식으로 서버-클라이언트 간의 데이터 송수신
 
 ---
 ## 부가기능  

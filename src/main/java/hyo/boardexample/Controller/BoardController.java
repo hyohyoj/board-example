@@ -94,12 +94,15 @@ public class BoardController {
     }
 
     // ModelAndView 형태로 데이터가 세팅 된 뷰를 반환
-    @GetMapping("/selectList")
+    @PostMapping("/selectList")
     @ResponseBody
     public ModelAndView selectList(
-            @ModelAttribute Board boardModel,
-            @SessionAttribute(name = SessionConstants.LOGIN_MEMBER, required = false) Login loginMember,
-            @RequestParam(value = "mode", defaultValue = "text", required = false) String mode)
+//            @ModelAttribute Board boardModel, // form-data 형식으로 받아옴
+//            @SessionAttribute(name = SessionConstants.LOGIN_MEMBER, required = false) Login loginMember,
+//            @RequestParam(value = "mode", defaultValue = "text", required = false) String mode
+            @RequestBody Board boardModel,      // JSON 형식으로 받아옴
+            @SessionAttribute(name = SessionConstants.LOGIN_MEMBER, required = false) Login loginMember
+    )
     {
         UserAuth userAuth = new UserAuth();
         userAuth.setUser_id(loginMember.getUser_id());
@@ -140,7 +143,7 @@ public class BoardController {
             mv.addObject("boardCount", boardCount);                 // 총 게시글 수
             mv.addObject("boardKind", boardType.getKind());         // 게시글 타입(gallery, qna)
             mv.addObject("boardPage", boardModel.getPage());        // 현재 페이지
-            mv.addObject("mode", mode);                             // 갤러리 정렬 모드(text, grid)
+            mv.addObject("mode", boardModel.getMode());                             // 갤러리 정렬 모드(text, grid)
         } catch (Exception e) {
             System.out.println(e + " : 에러 발생");
             mv.setViewName("/error");
@@ -328,7 +331,7 @@ public class BoardController {
 
     @PostMapping("/insertAnswer")
     @ResponseBody
-    public int insertAnswer(@ModelAttribute Board board) {
+    public int insertAnswer(@RequestBody Board board) {
 
         Map<String, Object> map = new HashMap<>();
 

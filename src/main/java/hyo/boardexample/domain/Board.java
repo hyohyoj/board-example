@@ -42,5 +42,6 @@ public class Board {
     private String selected_page;
     private String imageUploadPath;
     private int new_board_re_ref;
+    private String mode;
 
 }

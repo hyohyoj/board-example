@@ -6,13 +6,13 @@
     <sql id="search">
         <choose>
             <when test="keyword == 'user_id'.toString()">
-                AND user_id LIKE CONCAT(#{searchContent},'%')
+                AND user_id LIKE CONCAT('%',#{searchContent},'%')
             </when>
             <when test="keyword == 'board_title'.toString()">
-                AND board_title LIKE CONCAT(#{searchContent},'%')
+                AND board_title LIKE CONCAT('%',#{searchContent},'%')
             </when>
             <otherwise>
-                AND board_content LIKE CONCAT(#{searchContent},'%')
+                AND board_content LIKE CONCAT('%',#{searchContent},'%')
             </otherwise>
         </choose>
 
@@ -239,9 +239,9 @@
         SET
             board_re_seq = board_re_seq + 1
         WHERE
-            board_re_ref = #{boardVo.board_re_ref}
+            board_re_ref = #{board_re_ref}
         AND
-            board_re_seq > #{boardVo.board_re_seq}
+            board_re_seq > #{board_re_seq}
     </update>
 
     <!-- HashMap 형태 받아옴 -->

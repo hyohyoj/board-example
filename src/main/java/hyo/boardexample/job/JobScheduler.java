@@ -22,8 +22,8 @@ public class JobScheduler {
     private final JobLauncher jobLauncher;
     private final JobConfiguration jobConfiguration;
 
-    // 5분 마다 실행
-    @Scheduled(cron = "0 0/5 * * * *")
+    // @Scheduled(cron = "0 0/5 * * * *")
+    @Scheduled(cron = "0 0 1 * * *")    // 매일 새벽 1시에 실행
     public void runJob() {
 
         Map<String, JobParameter> confMap = new HashMap<>();

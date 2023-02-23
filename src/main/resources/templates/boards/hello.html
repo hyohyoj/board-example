@@ -109,12 +109,14 @@ table {
                 console.log("totalCount : " + data);
                 totalCount = data;
 
+                // JSON 형식으로 데이터 전송
                 $.ajax({
-                    type : "GET",
+                    type : "POST",
                     url : "/board/selectList",
                     dataType:"text",
                     async:false,
-                    data : params,
+                    headers: {'Content-Type': 'application/json'},
+                    data : JSON.stringify(params),
                     success : function(data){
                           // 테이블 초기화
                           $("#dataTable").empty();
@@ -286,6 +288,8 @@ table {
     }
 
     $(document).ready(function () {
+
+        console.log(location.search);
 
         let selectKeyword = [[${keyword}]];
         if(selectKeyword != null) {

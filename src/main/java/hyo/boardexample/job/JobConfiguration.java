@@ -40,14 +40,14 @@ public class JobConfiguration {
         return stepBuilderFactory.get("fileDeleteStep")
                 .tasklet((contribution, chunkContext) -> {
 
-                    log.info("============ 파일 삭제 배치 스케줄러 시작 ============");
+                    log.warn("============ 파일 삭제 배치 스케줄러 시작 ============");
 
                     // 삭제 할 파일 리스트 받아옴
                     List<FileInfo> fileInfoList = fileInfoService.deleteFileList();
                     int success;
 
                     if(fileInfoList == null) {
-                        System.out.println("삭제할 파일 리스트 존재하지 않음");
+                        log.warn("삭제할 파일 리스트 존재하지 않음");
                         return RepeatStatus.FINISHED;
                     }
 
@@ -61,19 +61,19 @@ public class JobConfiguration {
                         File file = new File(uploadPath, fileInfo.getSave_name());
 
                         if(file.exists()) {
-                            System.out.println(uploadPath + "내 " + fileInfo.getSave_name() +  " 이름 파일 존재!");
+                            log.warn(uploadPath + " 폴더 내 " + fileInfo.getSave_name() +  " 파일 존재!");
                             file.delete();
                             success = fileInfoService.deleteFileOne(fileInfo.getFile_no());
 
                             if(success == 1) {
-                                System.out.println("파일 삭제 완료");
+                                log.warn("파일 삭제 완료");
                             }
                         } else {
-                            System.out.println("파일 존재하지 않음");
+                            log.warn("파일 존재하지 않음");
                         }
                     }
 
-                    log.info("============ 파일 삭제 배치 스케줄러 종료 ============");
+                    log.warn("============ 파일 삭제 배치 스케줄러 종료 ============");
 
                     return RepeatStatus.FINISHED;
                 })

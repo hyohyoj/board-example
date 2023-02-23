@@ -16,13 +16,13 @@ public class LoginInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws ServletException {
 
         HttpSession session = request.getSession(false);
+        ModelAndView mv = new ModelAndView("/alert");
         Login loginMember = null;
 
         try{
             loginMember = (Login) session.getAttribute(SessionConstants.LOGIN_MEMBER);
 
             if(loginMember == null) {
-                ModelAndView mv = new ModelAndView("/alert");
                 mv.addObject("msg", "세션이 만료되어 로그아웃 되었습니다.");
                 mv.addObject("url", "/login");
                 throw new ModelAndViewDefiningException(mv);
@@ -31,7 +31,6 @@ public class LoginInterceptor implements HandlerInterceptor {
             }
 
         } catch (Exception e) {
-            ModelAndView mv = new ModelAndView("/alert");
             mv.addObject("msg", "세션이 만료되어 로그아웃 되었습니다.");
             mv.addObject("url", "/login");
             throw new ModelAndViewDefiningException(mv);
